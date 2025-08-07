@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   Instagram,
 } from "lucide-react";
+import TestimonialCarousel from "../components/ui/TestimonialCarousel";
 
 const Index = () => {
   return (
@@ -38,10 +39,10 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 md:px-12 py-8 md:py-16">
-        <div className="grid lg:grid-cols-2 gap-8 md:gap-20 items-center">
-          {/* Left Content */}
-          <div className="space-y-8">
-            <div className="bg-white/60 backdrop-blur-md rounded-[24px] p-8 md:p-16 shadow-xl border border-[#E7E9FF]">
+        <div className="w-full">
+          <div className="bg-white/60 backdrop-blur-md rounded-[24px] p-8 md:p-16 shadow-xl border border-[#E7E9FF] w-full flex flex-col md:flex-row items-center gap-8">
+            {/* Content on the left */}
+            <div className="flex-1 w-full order-2 md:order-1">
               <h1 className="text-[2.2rem] md:text-[2.8rem] font-extrabold text-[#3839C9] mb-4 md:mb-6 leading-tight tracking-tight">
                 Get a verified Flight reservation
               </h1>
@@ -56,27 +57,25 @@ const Index = () => {
               </button>
 
               <p className="text-xs md:text-sm font-bold text-[#637996] mt-4 md:mt-6">
-                instant & secure Booking from
-                <br />
+                Instant & secure Booking from
                 Just 10$
               </p>
             </div>
-          </div>
-
-          {/* Right Image */}
-          <div className="relative flex justify-center items-center">
-            <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/4892c6663da45476d181f590565ecdb11dc88276?width=962"
-              alt="Flight ticket mockup"
-              className="w-full h-auto max-w-[340px] md:max-w-[500px] lg:max-w-[600px] mx-auto object-contain rounded-2xl shadow-2xl border border-[#E7E9FF]"
-              loading="eager"
-            />
+                        {/* Image on the right */}
+            <div className="flex-1 w-full flex justify-center items-end order-1 md:order-2">
+              <img
+                src="/hero.png"
+                alt="Flight Hero Visual"
+                className="w-full max-w-xs md:max-w-sm lg:max-w-md h-auto object-contain rounded-2xl border border-[#E7E9FF] bg-white shadow-xl z-20"
+                loading="eager"
+              />
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features Bar */}
-      <section className="w-full py-6 md:py-10 gradient-box rounded-2xl md:rounded-3xl">
+      <section className="w-full py-16 md:py-24 gradient-box rounded-2xl md:rounded-3xl">
         <div className="container mx-auto px-2 md:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0 text-center">
             <div className="flex flex-col items-center justify-center py-2 md:py-0">
@@ -119,79 +118,87 @@ const Index = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
             {/* Fast Reservation */}
-            <div className="relative flex flex-col items-center h-40 md:h-56">
-              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-col justify-between shadow-lg">
-                <div className="bg-[#FFECE4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mb-4 mx-auto">
+            <div className="relative flex flex-col justify-center h-40 md:h-56">
+              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg">
+                <div className="bg-[#FFECE4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mr-6">
                   <img
                     src="/L-Lightning.png"
                     alt="Lightning Icon"
                     className="w-7 h-7 md:w-10 md:h-10 object-contain"
                   />
                 </div>
-                <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
-                  Fast Reservation
-                </h3>
-                <p className="text-white text-base md:text-lg font-semibold font-jakarta">
-                  Arrives instantly via email. No delay or stress (cue sigh of
-                  relief!).
-                </p>
+                <div className="flex-1 text-left">
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
+                    Fast Reservation
+                  </h3>
+                  <p className="text-white text-base md:text-lg font-semibold font-jakarta">
+                    Arrives instantly via email. No delay or stress (cue sigh of
+                    relief!).
+                  </p>
+                </div>
               </div>
             </div>
             {/* Verifiable */}
-            <div className="relative flex flex-col items-center h-40 md:h-56">
-              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-col justify-between shadow-lg">
-                <div className="bg-[#FFECE4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mb-4 mx-auto">
+            <div className="relative flex flex-col justify-center h-40 md:h-56">
+              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg">
+                <div className="bg-[#FFECE4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mr-6">
                   <img
                     src="/public/Flight Landing Page.png"
                     alt="Verified Icon"
                     className="w-7 h-7 md:w-10 md:h-10 object-contain"
                   />
                 </div>
-                <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
-                  Verifiable
-                </h3>
-                <p className="text-white text-base md:text-lg font-semibold font-jakarta">
-                  Arrives instantly via email. No delay or stress (cue sigh of
-                  relief!).
-                </p>
+                <div className="flex-1 text-left">
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
+                    Verifiable
+                  </h3>
+                  <p className="text-white text-base md:text-lg font-semibold font-jakarta">
+                    Arrives instantly via email. No delay or stress (cue sigh of
+                    relief!).
+                  </p>
+                </div>
               </div>
             </div>
             {/* Secure & Easy */}
-            <div className="relative flex flex-col items-center h-40 md:h-56">
-              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-col justify-between shadow-lg">
-                <div className="bg-[#EAEBF4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mb-4 mx-auto">
+            <div className="relative flex flex-col justify-center h-40 md:h-56">
+              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg">
+                <div className="bg-[#EAEBF4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mr-6">
                   <img
                     src="/public/Flight Landing Page.png"
                     alt="Secure Icon"
                     className="w-7 h-7 md:w-10 md:h-10 object-contain"
                   />
                 </div>
-                <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
-                  Secure & Easy
-                </h3>
-                <p className="text-white text-base md:text-lg font-semibold font-jakarta">
-                  Arrives instantly via email. No delay or stress (cue sigh of
-                  relief!).
-                </p>
+                <div className="flex-1 text-left">
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
+                    Secure & Easy
+                  </h3>
+                  <p className="text-white text-base md:text-lg font-semibold font-jakarta">
+                    Arrives instantly via email. No delay or stress (cue sigh of
+                    relief!).
+                  </p>
+                </div>
               </div>
             </div>
             {/* Save Money */}
-            <div className="relative flex flex-col items-center h-40 md:h-56">
-              <div className="gradient-box-pink rounded-2xl p-6 md:p-8 w-full h-full flex flex-col justify-between shadow-lg">
-                <div className="bg-[#FFECE4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mb-4 mx-auto">
+            <div className="relative flex flex-col justify-center h-40 md:h-56">
+              <div className="gradient-box-pink rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg">
+                <div className="bg-[#FFECE4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mr-6">
                   <img
                     src="/F-Wallet@3x.png"
                     alt="Wallet Icon"
                     className="w-7 h-7 md:w-10 md:h-10 object-contain"
                   />
                 </div>
-                <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
-                  Save Money
-                </h3>
-                <p className="text-white text-base md:text-lg font-semibold font-jakarta">
-                  Arrives instantly via email. No delay or stress (cue sigh of
-                  relief!).
-                </p>
+                <div className="flex-1 text-left">
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
+                    Save Money
+                  </h3>
+                  <p className="text-white text-base md:text-lg font-semibold font-jakarta">
+                    Arrives instantly via email. No delay or stress (cue sigh of
+                    relief!).
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -273,14 +280,13 @@ const Index = () => {
             </div>
 
             {/* Right Map */}
-            <div className="relative flex justify-center items-center">
-              <img
-                src="https://api.builder.io/api/v1/image/assets/TEMP/a41bc3fc48c851e6b916dfae849553d56f69a81d?width=940"
-                alt="World Map"
-                className="w-full h-auto max-w-[320px] md:max-w-[500px] lg:max-w-[600px] mx-auto object-contain rounded-xl"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-blue-100/20 rounded-xl blur-lg pointer-events-none"></div>
+            <div className="grid grid-cols-1 gap-8 md:gap-12 items-center">
+              <div className="space-y-6 md:space-y-8">
+                <div className="text-center lg:text-left">
+
+                  <TestimonialCarousel />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -296,49 +302,90 @@ const Index = () => {
             Many People including
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 max-w-4xl mx-auto">
-            {/* Digital Nomads */}
-            <div className="bg-[#3839C9]/80 rounded-2xl p-6 md:p-8 text-left space-y-2 md:space-y-4 shadow-lg">
-              <h3 className="text-lg md:text-2xl font-bold text-white">
-                Digital Nomads
-              </h3>
-              <p className="text-white text-xs md:text-base font-medium">
-                Arrives instantly via email. No delay or stress (cue sigh of
-                relief!).
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+            {/* Digital Nomads*/}
+            <div className="relative flex flex-col justify-center h-40 md:h-56">
+              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg">
+                <div className="bg-[#FFECE4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mr-6">
+                  <img
+                    src="/L-Lightning.png"
+                    alt="Lightning Icon"
+                    className="w-7 h-7 md:w-10 md:h-10 object-contain"
+                  />
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
+                    Digital Nomads
+                  </h3>
+                  <p className="text-white text-base md:text-lg font-semibold font-jakarta">
+                    Arrives instantly via email. No delay or stress (cue sigh of
+                    relief!).
+                  </p>
+                </div>
+              </div>
             </div>
-
-            {/* Frequent travelers */}
-            <div className="bg-[#3839C9]/80 rounded-2xl p-6 md:p-8 text-left space-y-2 md:space-y-4 shadow-lg">
-              <h3 className="text-lg md:text-2xl font-bold text-white">
-                Frequent travelers
-              </h3>
-              <p className="text-white text-xs md:text-base font-medium">
-                Arrives instantly via email. No delay or stress (cue sigh of
-                relief!).
-              </p>
+            {/*  Frequent travelers*/}
+            <div className="relative flex flex-col justify-center h-40 md:h-56">
+              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg">
+                <div className="bg-[#FFECE4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mr-6">
+                  <img
+                    src="/public/Flight Landing Page.png"
+                    alt="Verified Icon"
+                    className="w-7 h-7 md:w-10 md:h-10 object-contain"
+                  />
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
+                    Frequent travelers
+                  </h3>
+                  <p className="text-white text-base md:text-lg font-semibold font-jakarta">
+                    Arrives instantly via email. No delay or stress (cue sigh of
+                    relief!).
+                  </p>
+                </div>
+              </div>
             </div>
-
             {/* Visa applicants */}
-            <div className="bg-[#3839C9]/80 rounded-2xl p-6 md:p-8 text-left space-y-2 md:space-y-4 shadow-lg">
-              <h3 className="text-lg md:text-2xl font-bold text-white">
-                Visa applicants
-              </h3>
-              <p className="text-white text-xs md:text-base font-medium">
-                Arrives instantly via email. No delay or stress (cue sigh of
-                relief!).
-              </p>
+            <div className="relative flex flex-col justify-center h-40 md:h-56">
+              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg">
+                <div className="bg-[#EAEBF4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mr-6">
+                  <img
+                    src="/public/Flight Landing Page.png"
+                    alt="Secure Icon"
+                    className="w-7 h-7 md:w-10 md:h-10 object-contain"
+                  />
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
+                    Visa applicants
+                  </h3>
+                  <p className="text-white text-base md:text-lg font-semibold font-jakarta">
+                    Arrives instantly via email. No delay or stress (cue sigh of
+                    relief!).
+                  </p>
+                </div>
+              </div>
             </div>
-
             {/* Last minute trips */}
-            <div className="bg-[#3839C9]/80 rounded-2xl p-6 md:p-8 text-left space-y-2 md:space-y-4 shadow-lg">
-              <h3 className="text-lg md:text-2xl font-bold text-white">
-                Last minute trips
-              </h3>
-              <p className="text-white text-xs md:text-base font-medium">
-                Arrives instantly via email. No delay or stress (cue sigh of
-                relief!).
-              </p>
+            <div className="relative flex flex-col justify-center h-40 md:h-56">
+              <div className="gradient-box-pink rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg">
+                <div className="bg-[#FFECE4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mr-6">
+                  <img
+                    src="/F-Wallet@3x.png"
+                    alt="Wallet Icon"
+                    className="w-7 h-7 md:w-10 md:h-10 object-contain"
+                  />
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
+                    Last minute trips
+                  </h3>
+                  <p className="text-white text-base md:text-lg font-semibold font-jakarta">
+                    Arrives instantly via email. No delay or stress (cue sigh of
+                    relief!).
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -356,99 +403,114 @@ const Index = () => {
           </p>
         </div>
       </section>
+
 
       {/* Flexibility Section */}
-      <section className="py-14 md:py-20">
-        <div className="container mx-auto px-4 md:px-8">
-          <h2 className="text-3xl md:text-6xl font-extrabold text-[#3839C9] text-center mb-4 md:mb-8 leading-tight tracking-tight">
-            More flexibility while
-            <br /> securing your visa
+      <section className="py-16 md:py-20">
+        <div className="container mx-auto px-4 md:px-8 text-center">
+          <h2 className="text-3xl text-left md:text-5xl font-extrabold text-[#191A78] mb-2 md:mb-4 tracking-tight font-jakarta">
+            More flexibility while 
+            <br/>
+            securing your visa
           </h2>
-          <p className="text-lg md:text-3xl text-black text-center mb-8 md:mb-16 font-light max-w-3xl md:max-w-4xl mx-auto">
-            Most embassies encourage travelers to wait for visa approval before
-            purchasing a full-priced plane ticket
+          <p className="text-lg text-left md:text-2xl text-[#8A8A8F] mb-8 md:mb-16 font-light font-jakarta">
+            Most embassies encourage travelers to wait for 
+            <br/>
+            visa approval before purchasing a full priced plane ticket
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-            {/* Card 1 */}
-            <div className="space-y-4 md:space-y-6">
-              <div className="bg-gradient-to-br from-purple-100/60 to-pink-100/60 rounded-2xl h-56 md:h-80 p-4 md:p-8 flex flex-col items-center justify-center shadow-lg">
+
+          <div className="flex flex-row justify-center gap-8 md:gap-12 w-full">
+            {/* British Embassy */}
+            <div
+              className="relative flex flex-row items-start justify-start"
+              style={{
+                width: 400,
+                height: 406,
+                background: 'radial-gradient(ellipse at right, #FFF7F9 25%, #9A97ED 95%)',
+                borderRadius: '1rem',
+                boxShadow: '0 10px 32px 0 rgba(60, 60, 120, 0.10)',
+                padding: '2rem',
+                margin: '0',
+              }}
+            >
+              <div className="bg-[#FFECE4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mr-6 mt-0">
                 <img
-                  src="https://api.builder.io/api/v1/image/assets/TEMP/c147363355e725d78f78d1ce58902d043d0612af?width=406"
-                  alt="Embassy illustration"
-                  className="w-20 h-12 md:w-32 md:h-20 object-contain mx-auto mb-2 md:mb-4"
-                  loading="lazy"
+                  src="/L-Lightning.png"
+                  alt="Lightning Icon"
+                  className="w-7 h-7 md:w-10 md:h-10 object-contain"
                 />
               </div>
-              <p className="text-base md:text-xl text-black font-light">
-                Most embassies encourage travelers to wait for visa approval
-                before purchasing a full-priced plane ticket
-              </p>
-              <button className="text-base md:text-xl font-bold text-[#3839C9] hover:underline">
-                See More ?
-              </button>
-            </div>
-            {/* Card 2 */}
-            <div className="space-y-4 md:space-y-6">
-              <div className="bg-gradient-to-br from-yellow-100/60 to-orange-100/60 rounded-2xl h-56 md:h-80 p-4 md:p-8 flex flex-col items-center justify-center shadow-lg">
-                <img
-                  src="https://api.builder.io/api/v1/image/assets/TEMP/8e3ae5dccb218d3c1426a42e30c9460ee697eaf9?width=154"
-                  alt="Spanish Embassy"
-                  className="w-10 h-10 md:w-16 md:h-16 object-contain mb-2 md:mb-4"
-                  loading="lazy"
-                />
-                <h3 className="text-base md:text-xl font-bold text-[#5D518D] text-center">
-                  Spanish
-                  <br />
-                  Embassy
+              <div className="flex-1 text-left w-full mt-0 flex flex-col justify-center">
+                <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
+                  Fast Reservation
                 </h3>
+                <p className="text-white text-base md:text-lg font-semibold font-jakarta">
+                  Arrives instantly via email. No delay or stress (cue sigh of relief!).
+                </p>
               </div>
-              <p className="text-base md:text-xl text-black font-light">
-                Most embassies encourage travelers to wait for visa approval
-                before purchasing a full-priced plane ticket
-              </p>
-              <button className="text-base md:text-xl font-bold text-[#3839C9] hover:underline">
-                Spanish Embassy
-              </button>
             </div>
-            {/* Card 3 */}
-            <div className="space-y-4 md:space-y-6">
-              <div className="bg-gradient-to-br from-purple-100/60 to-blue-100/60 rounded-2xl h-56 md:h-80 p-4 md:p-8 flex flex-col items-center justify-center shadow-lg">
+            {/* Spanish Embassy*/}
+            <div
+              className="relative flex flex-row items-start justify-start"
+              style={{
+                width: 400,
+                height: 406,
+                background: 'radial-gradient(ellipse at right, #FFC022 60%, #FCACBD 75%)',
+                borderRadius: '1rem',
+                boxShadow: '0 10px 32px 0 rgba(60, 60, 120, 0.10)',
+                padding: '2rem',
+                margin: '0',
+              }}
+            >
+              <div className="bg-[#EAEBF4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mr-6 mt-0">
                 <img
-                  src="https://api.builder.io/api/v1/image/assets/TEMP/d2103eefe32408058230a6efe582a66d17470a44?width=184"
-                  alt="Iceland Embassy"
-                  className="w-12 h-12 md:w-20 md:h-20 object-contain mb-2 md:mb-4"
-                  loading="lazy"
+                  src="/public/Flight Landing Page.png"
+                  alt="Secure Icon"
+                  className="w-7 h-7 md:w-10 md:h-10 object-contain"
                 />
-                <h3 className="text-base md:text-xl font-bold text-[#5D518D] text-center">
-                  Iceland
-                  <br />
-                  Embassy
-                </h3>
               </div>
-              <p className="text-base md:text-xl text-black font-light">
-                Most embassies encourage travelers to wait for visa approval
-                before purchasing a full-priced plane ticket
-              </p>
-              <button className="text-base md:text-xl font-bold text-[#3839C9] hover:underline">
-                Iceland Embassy
-              </button>
+              <div className="flex-1 text-left w-full mt-0 flex flex-col justify-center">
+                <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
+                  Secure & Easy
+                </h3>
+                <p className="text-white text-base md:text-lg font-semibold font-jakarta">
+                  Arrives instantly via email. No delay or stress (cue sigh of relief!).
+                </p>
+              </div>
+            </div>
+            {/* Uceland Embassy */}
+            <div
+              className="relative flex flex-row items-start justify-start"
+              style={{
+                width: 400,
+                height: 406,
+                background: 'radial-gradient(ellipse at right, #FFFFFF 14%, #FCACBD 55%, #5F59F9 95%)',
+                borderRadius: '1rem',
+                boxShadow: '0 10px 32px 0 rgba(60, 60, 120, 0.10)',
+                padding: '2rem',
+                margin: '0',
+              }}
+            >
+              <div className="bg-[#FFECE4] rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mr-6 mt-0">
+                <img
+                  src="/F-Wallet@3x.png"
+                  alt="Wallet Icon"
+                  className="w-7 h-7 md:w-10 md:h-10 object-contain"
+                />
+              </div>
+              <div className="flex-1 text-left w-full mt-0 flex flex-col justify-center">
+                <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2 font-jakarta">
+                  Save Money
+                </h3>
+                <p className="text-white text-base md:text-lg font-semibold font-jakarta">
+                  Arrives instantly via email. No delay or stress (cue sigh of relief!).
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-10 md:py-16">
-        <div className="container mx-auto px-4 md:px-8 text-center">
-          <button className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl mx-auto hover:bg-blue-700 transition-colors shadow-lg">
-            <Navigation className="w-5 h-5 md:w-6 md:h-6" />
-            Book Now
-          </button>
-          <p className="text-xs md:text-sm font-bold text-[#637996] mt-2 md:mt-4">
-            instant & secure Booking from Just 10$
-          </p>
-        </div>
-      </section>
 
       {/* Airlines Section */}
       <section className="py-14 md:py-20">
