@@ -114,6 +114,31 @@ export default {
         'ob-dark': '#20242A',
         'ob-text': '#303850',
       },
+      // OnboardTicket brand colors
+        'onboard': {
+          primary: '#505BFB',
+          secondary: '#C6FF9A',
+          purple: {
+            50: '#F6F6FF',
+            100: '#878EFF',
+            200: '#C0C8FF',
+            300: '#878EFF',
+            400: '#505BFB',
+            500: '#424BC9',
+            600: '#3839C9',
+          },
+          green: {
+            400: '#C6FF9A',
+          },
+          gray: {
+            100: '#FEF7FF',
+            200: '#F6F6FF',
+            300: '#4D4848',
+            400: '#524C4C',
+            500: '#616161',
+          },
+        },
+      
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

@@ -1,236 +1,208 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Plus, ArrowRight, Mail } from "lucide-react";
 
-interface PassengerData {
-  title: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+interface PassengersProps {
+  onNext: () => void;
+  onBack: () => void;
+  currentStep: string;
+  onNavigate: (step: any) => void;
 }
 
-export default function Index() {
-  const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [passengers, setPassengers] = useState<PassengerData[]>([
-    { title: "Mr", firstName: "", lastName: "", email: "" }
-  ]);
-
-  const addPassenger = () => {
-    setPassengers([...passengers, { title: "Mr", firstName: "", lastName: "", email: "" }]);
-  };
-
-  const updatePassenger = (index: number, field: keyof PassengerData, value: string) => {
-    const updated = [...passengers];
-    updated[index][field] = value;
-    setPassengers(updated);
-  };
-
-  const removePassenger = (index: number) => {
-    if (passengers.length > 1) {
-      setPassengers(passengers.filter((_, i) => i !== index));
-    }
-  };
+export default function Passengers({ onNext, onBack, currentStep, onNavigate }: PassengersProps) {
+  const [selectedTitle, setSelectedTitle] = useState("Mr");
+  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
   return (
-    <div className="min-h-screen bg-onboard-primary font-jakarta">
-      {/* Header with Logo */}
-      <div className="pt-12 pb-8 px-4">
-        <div className="max-w-7xl mx-auto">
-          <img 
-            src="https://api.builder.io/api/v1/image/assets/TEMP/546fa6d584538b821a4ae9a72451f346c3dd5fdd?width=588" 
-            alt="OnboardTicket Logo" 
-            className="h-14 w-auto cursor-pointer"
-            onClick={() => navigate("/")}
-          />
-        </div>
-      </div>
+    <div className="min-h-screen bg-ticket-primary text-white">
+      {/* Header */}
+      <header className="px-4 sm:px-8 lg:px-36 pt-12 pb-8">
+        <img 
+          src="https://api.builder.io/api/v1/image/assets/TEMP/546fa6d584538b821a4ae9a72451f346c3dd5fdd?width=588" 
+          alt="OnboardTicket" 
+          className="h-15 w-auto"
+        />
+      </header>
 
-      <div className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="flex flex-col xl:flex-row gap-8">
-          {/* Left Side - Booking Form */}
-          <div className="flex-1 max-w-4xl">
-            {/* Progress Steps */}
-            <div className="mb-8 lg:mb-12">
-              <div className="flex items-center justify-between mb-6">
-                <div className={`text-lg md:text-2xl font-bold ${currentStep === 1 ? 'text-white' : 'text-white/70'}`}>
-                  Route
-                </div>
-                <div className={`text-lg md:text-2xl font-bold ${currentStep === 2 ? 'text-white' : 'text-white/70'}`}>
-                  Passengers
-                </div>
-                <div className={`text-lg md:text-2xl font-bold ${currentStep === 3 ? 'text-white' : 'text-white/70'}`}>
-                  Confirmation
+      <div className="px-4 sm:px-8 lg:px-36">
+        {/* Navigation Tabs */}
+        <div className="flex flex-col sm:flex-row gap-8 sm:gap-16 mb-12">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => onNavigate("route")}
+              className="text-2xl font-bold text-white/60 hover:text-white transition-colors"
+            >
+              Route
+            </button>
+          </div>
+          <div className="flex items-center gap-4">
+            <button className="text-2xl font-bold">Passengers</button>
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => onNavigate("confirmation")}
+              className="text-2xl font-bold text-white/60 hover:text-white transition-colors"
+            >
+              Confirmation
+            </button>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-16">
+          <div className="flex items-center">
+            <div className="h-1 bg-ticket-secondary flex-1"></div>
+            <div className="h-1 bg-ticket-accent w-56"></div>
+            <div className="h-1 bg-ticket-secondary flex-1"></div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
+          {/* Left Side - Form */}
+          <div className="space-y-8">
+            {/* Passenger Section */}
+            <div>
+              <h2 className="text-2xl font-bold mb-8 text-[#F6F6FF]">Passenger</h2>
+              
+              {/* Contact Email */}
+              <div className="mb-6">
+                <div className="bg-ticket-secondary rounded-lg p-4 relative">
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 opacity-60" />
+                  <input
+                    type="email"
+                    placeholder="Contact Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-transparent pl-12 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none"
+                  />
                 </div>
               </div>
-              
-              {/* Progress Bar */}
-              <div className="w-full bg-onboard-purple-100 h-1 rounded">
-                <div 
-                  className="bg-onboard-green-400 h-1 rounded transition-all duration-300"
-                  style={{ width: `${(currentStep / 3) * 100}%` }}
-                />
+
+              {/* Title Selection - Fixed styling to match prototype */}
+              <div className="grid grid-cols-7 gap-2 mb-6">
+                {["Mr", "Ms", "Mrs"].map((title, index) => (
+                  <button
+                    key={title}
+                    onClick={() => setSelectedTitle(title)}
+                    className={`h-15 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center ${
+                      selectedTitle === title 
+                        ? "bg-ticket-dark text-white" 
+                        : "bg-ticket-light text-white/55"
+                    }`}
+                  >
+                    {title}
+                  </button>
+                ))}
+                {/* Empty slots - Fixed styling to match prototype */}
+                {[...Array(4)].map((_, index) => (
+                  <div key={index} className="h-15 rounded-lg bg-ticket-light"></div>
+                ))}
+              </div>
+
+              {/* Name Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div className="bg-ticket-secondary rounded-lg p-4">
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full bg-transparent text-white placeholder-gray-400 focus:outline-none"
+                  />
+                </div>
+                <div className="bg-ticket-secondary rounded-lg p-4">
+                  <input
+                    type="text"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full bg-transparent text-white placeholder-gray-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Add Passenger Button */}
+              <div className="bg-ticket-secondary rounded-lg p-4 flex items-center justify-center gap-2 cursor-pointer hover:bg-opacity-80 transition-colors">
+                <Plus className="w-4 h-4" />
+                <span className="text-sm font-semibold text-white/55">Add Passenger</span>
               </div>
             </div>
 
-            {/* Step 2: Passengers Section */}
-            <div className="space-y-6 lg:space-y-8">
-              <h2 className="text-xl md:text-2xl font-bold text-onboard-purple-50 mb-6 lg:mb-8">Passenger</h2>
-
-              {passengers.map((passenger, index) => (
-                <div key={index} className="space-y-4">
-                  {/* Email Field */}
-                  <div className="relative">
-                    <input
-                      type="email"
-                      placeholder="Contact Email"
-                      value={passenger.email}
-                      onChange={(e) => updatePassenger(index, 'email', e.target.value)}
-                      className="w-full bg-onboard-purple-100 rounded-lg px-4 py-3 md:py-4 text-white placeholder-gray-400 border-none focus:outline-none focus:ring-2 focus:ring-onboard-green-400"
-                    />
-                    <svg
-                      className="absolute right-4 top-3 md:top-4 w-5 h-5 md:w-6 md:h-6 opacity-60"
-                      fill="#FEF7FF"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M19 8C18.1667 8 17.4583 7.70833 16.875 7.125C16.2917 6.54167 16 5.83333 16 5C16 4.16667 16.2917 3.45833 16.875 2.875C17.4583 2.29167 18.1667 2 19 2C19.8333 2 20.5417 2.29167 21.125 2.875C21.7083 3.45833 22 4.16667 22 5C22 5.83333 21.7083 6.54167 21.125 7.125C20.5417 7.70833 19.8333 8 19 8ZM4 20C3.45 20 2.97917 19.8042 2.5875 19.4125C2.19583 19.0208 2 18.55 2 18V6C2 5.45 2.19583 4.97917 2.5875 4.5875C2.97917 4.19583 3.45 4 4 4H14.1C14.0333 4.33333 14 4.66667 14 5C14 5.33333 14.0333 5.66667 14.1 6C14.2167 6.53333 14.4083 7.02917 14.675 7.4875C14.9417 7.94583 15.2667 8.35 15.65 8.7L12 11L4 6V8L12 13L17.275 9.7C17.5583 9.8 17.8417 9.875 18.125 9.925C18.4083 9.975 18.7 10 19 10C19.5333 10 20.0583 9.91667 20.575 9.75C21.0917 9.58333 21.5667 9.33333 22 9V18C22 18.55 21.8042 19.0208 21.4125 19.4125C21.0208 19.8042 20.55 20 20 20H4Z"/>
-                    </svg>
-                  </div>
-
-                  {/* Title Selection and Name Fields */}
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    {/* Title Selection */}
-                    <div className="flex gap-2 sm:min-w-fit">
-                      {['Mr', 'Ms', 'Mrs'].map((title) => (
-                        <button
-                          key={title}
-                          type="button"
-                          onClick={() => updatePassenger(index, 'title', title)}
-                          className={`w-12 h-12 md:w-15 md:h-15 rounded-lg text-xs md:text-sm font-semibold transition-colors ${
-                            passenger.title === title
-                              ? 'bg-onboard-purple-500 text-white/90'
-                              : 'bg-onboard-purple-100/40 text-white/55'
-                          }`}
-                        >
-                          {title}
-                        </button>
-                      ))}
-                      {/* Remove Passenger Button, only show if more than one passenger */}
-                      {passengers.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removePassenger(index)}
-                          className="w-12 h-12 md:w-15 md:h-15 rounded-lg bg-red-500/80 text-white/90 text-xs md:text-sm font-semibold flex items-center justify-center hover:bg-red-600 transition-colors"
-                          aria-label="Remove Passenger"
-                        >
-                          <svg className="w-4 h-4 md:w-5 md:h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Name Fields Container */}
-                    <div className="flex flex-col sm:flex-row gap-4 flex-1">
-                      {/* First Name */}
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          placeholder="First Name"
-                          value={passenger.firstName}
-                          onChange={(e) => updatePassenger(index, 'firstName', e.target.value)}
-                          className="w-full bg-onboard-purple-100 rounded-lg px-4 py-3 md:py-4 text-white placeholder-gray-400 border-none focus:outline-none focus:ring-2 focus:ring-onboard-green-400"
-                        />
-                      </div>
-
-                      {/* Last Name */}
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          placeholder="Last Name"
-                          value={passenger.lastName}
-                          onChange={(e) => updatePassenger(index, 'lastName', e.target.value)}
-                          className="w-full bg-onboard-purple-100 rounded-lg px-4 py-3 md:py-4 text-white placeholder-gray-400 border-none focus:outline-none focus:ring-2 focus:ring-onboard-green-400"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* Add Passenger Button */}
-              <button
-                onClick={addPassenger}
-                className="w-full bg-onboard-purple-100 rounded-lg py-4 text-white/55 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-onboard-purple-100/80 transition-colors"
+            {/* Navigation Button - Fixed styling to match prototype */}
+            <div className="flex justify-start">
+              <button 
+                onClick={onNext}
+                className="bg-ticket-accent rounded-full w-19 h-10 flex items-center justify-center hover:bg-opacity-80 transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Add Passenger
+                <ArrowRight className="w-6 h-6 text-black" />
               </button>
-
-              {/* Next Button */}
-              <div className="pt-8">
-                <button 
-                  onClick={() => setCurrentStep(3)}
-                  className="bg-onboard-green-400 text-black rounded-full w-20 h-11 flex items-center justify-center hover:bg-onboard-green-400/90 transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 12h14m-7-7l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
             </div>
           </div>
 
           {/* Right Side - Ticket Preview */}
-          <div className="xl:w-96 xl:flex-shrink-0">
-            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-2xl max-w-sm mx-auto xl:max-w-none">
-              {/* Flight Route */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="text-center sm:text-left">
-                  <div className="text-2xl md:text-4xl font-bold text-black">(RFD)</div>
-                  <div className="text-xs md:text-sm text-onboard-gray-300 font-semibold">Chicago Rockford</div>
-                  <div className="text-xs md:text-sm text-gray-400">20/05/205</div>
-                </div>
+          <div className="flex justify-center lg:justify-end">
+            <div className="bg-white rounded-lg p-8 shadow-2xl w-full max-w-sm">
+              {/* Ticket Header */}
+              <div className="bg-ticket-darker h-16 -mx-8 -mt-8 mb-6 flex items-center justify-center rounded-t-lg">
+                <ArrowRight className="w-8 h-8 text-black" />
+              </div>
 
-                <svg className="w-6 h-6 md:w-8 md:h-8 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 12h14m-7-7l7 7-7 7" />
-                </svg>
-
-                <div className="text-center sm:text-right">
-                  <div className="text-2xl md:text-4xl font-bold text-black">(ORY)</div>
-                  <div className="text-xs md:text-sm text-onboard-gray-300 font-semibold">Paris Orly</div>
-                  <div className="text-xs md:text-sm text-gray-400">30/05/205</div>
+              {/* Route Information */}
+              <div className="text-center mb-6">
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-black">(RFD)</div>
+                    <div className="text-xs font-semibold text-ticket-gray">Chicago Rockford</div>
+                    <div className="text-xs text-ticket-gray-light">20/05/205</div>
+                  </div>
+                  <ArrowRight className="w-8 h-8 text-black" />
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-black">(ORY)</div>
+                    <div className="text-xs font-semibold text-ticket-gray">Paris Orly</div>
+                    <div className="text-xs text-ticket-gray-light">30/05/205</div>
+                  </div>
                 </div>
               </div>
 
-              {/* Passenger and Flight Info Grid */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                {/* Passenger Info */}
-                <div className="space-y-2">
-                  <div className="text-xs md:text-sm text-onboard-gray-400 font-semibold">Passenger / 1</div>
-                  <div className="text-xs md:text-sm text-onboard-gray-400">Passengers</div>
-                  <div className="text-sm md:text-lg font-bold text-black">{passengers[0].title}.{passengers[0].firstName} {passengers[0].lastName}</div>
-                  <div className="text-xs md:text-sm text-onboard-gray-400">Seat</div>
-                  <div className="text-sm md:text-lg font-bold text-black">20C</div>
+              {/* Passenger Info */}
+              <div className="mb-6">
+                <div className="text-sm font-semibold text-ticket-text mb-1">Passenger / 1</div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-ticket-text font-semibold">Passenger</div>
+                    <div className="font-bold">{selectedTitle}.{firstName} {lastName}</div>
+                  </div>
+                  <div>
+                    <div className="text-ticket-text font-semibold">Flight</div>
+                    <div className="font-bold">$123CD</div>
+                  </div>
                 </div>
-
-                {/* Flight Details */}
-                <div className="space-y-2">
-                  <div className="text-xs md:text-sm text-onboard-gray-400">Flight</div>
-                  <div className="text-sm md:text-lg font-bold text-black">$123CD</div>
-                  <div className="text-xs md:text-sm text-onboard-gray-400">Departure</div>
-                  <div className="text-sm md:text-lg font-bold text-black">7:30 AM</div>
+                <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                  <div>
+                    <div className="text-ticket-text font-semibold">Seat</div>
+                    <div className="font-bold">20C</div>
+                  </div>
+                  <div>
+                    <div className="text-ticket-text font-semibold">Departure</div>
+                    <div className="font-bold">7:30 AM</div>
+                  </div>
                 </div>
               </div>
 
               {/* Barcode */}
-              <div className="border-t border-gray-200 pt-4">
-                <img
-                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='40'%3E%3Cg fill='%23000'%3E%3Crect x='0' y='0' width='2' height='40'/%3E%3Crect x='4' y='0' width='1' height='40'/%3E%3Crect x='8' y='0' width='3' height='40'/%3E%3Crect x='14' y='0' width='1' height='40'/%3E%3Crect x='18' y='0' width='2' height='40'/%3E%3Crect x='22' y='0' width='1' height='40'/%3E%3Crect x='26' y='0' width='3' height='40'/%3E%3Crect x='32' y='0' width='1' height='40'/%3E%3Crect x='36' y='0' width='2' height='40'/%3E%3Crect x='40' y='0' width='1' height='40'/%3E%3Crect x='44' y='0' width='3' height='40'/%3E%3Crect x='50' y='0' width='1' height='40'/%3E%3Crect x='54' y='0' width='2' height='40'/%3E%3Crect x='58' y='0' width='1' height='40'/%3E%3Crect x='62' y='0' width='3' height='40'/%3E%3Crect x='68' y='0' width='1' height='40'/%3E%3Crect x='72' y='0' width='2' height='40'/%3E%3Crect x='76' y='0' width='1' height='40'/%3E%3Crect x='80' y='0' width='3' height='40'/%3E%3Crect x='86' y='0' width='1' height='40'/%3E%3Crect x='90' y='0' width='2' height='40'/%3E%3Crect x='94' y='0' width='1' height='40'/%3E%3Crect x='98' y='0' width='3' height='40'/%3E%3Crect x='104' y='0' width='1' height='40'/%3E%3Crect x='108' y='0' width='2' height='40'/%3E%3Crect x='112' y='0' width='1' height='40'/%3E%3Crect x='116' y='0' width='3' height='40'/%3E%3Crect x='122' y='0' width='1' height='40'/%3E%3Crect x='126' y='0' width='2' height='40'/%3E%3Crect x='130' y='0' width='1' height='40'/%3E%3Crect x='134' y='0' width='3' height='40'/%3E%3Crect x='140' y='0' width='1' height='40'/%3E%3Crect x='144' y='0' width='2' height='40'/%3E%3Crect x='148' y='0' width='1' height='40'/%3E%3Crect x='152' y='0' width='3' height='40'/%3E%3Crect x='158' y='0' width='1' height='40'/%3E%3Crect x='162' y='0' width='2' height='40'/%3E%3Crect x='166' y='0' width='1' height='40'/%3E%3Crect x='170' y='0' width='3' height='40'/%3E%3Crect x='176' y='0' width='1' height='40'/%3E%3Crect x='180' y='0' width='2' height='40'/%3E%3Crect x='184' y='0' width='1' height='40'/%3E%3Crect x='188' y='0' width='3' height='40'/%3E%3Crect x='194' y='0' width='1' height='40'/%3E%3Crect x='198' y='0' width='2' height='40'/%3E%3C/g%3E%3C/svg%3E"
-                  alt="Barcode"
-                  className="w-full"
-                />
+              <div className="flex justify-center">
+                <div className="flex gap-1">
+                  {[...Array(15)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="w-1 bg-black" 
+                      style={{ 
+                        height: `${Math.random() * 20 + 10}px` 
+                      }}
+                    ></div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -248,7 +220,7 @@ export default function Index() {
                   src="/onboard/result.png" 
                   alt="OnboardTicket Logo" 
                   className="w-40 h-10 mb-4 cursor-pointer"
-                  onClick={() => navigate("/")}
+                  onClick={() => onNavigate("/")}
                 />
                 <hr className="border-white mb-4" />
                 <div className="text-base font-semibold text-white">Onboardticket.com</div>
@@ -264,9 +236,9 @@ export default function Index() {
                 About
               </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-white">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/about")}>Who We are ?</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/privacy-policy")}>Privacy Policy</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/terms-conditions")}>Terms & Conditions</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => onNavigate("/about")}>Who We are ?</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => onNavigate("/privacy-policy")}>Privacy Policy</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => onNavigate("/terms-conditions")}>Terms & Conditions</li>
               </ul>
             </div>
             {/* Get Help */}
@@ -275,9 +247,9 @@ export default function Index() {
                 Get Help
               </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-white">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/faq")}>FAQs</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/payment")}>Payment</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/contact")}>Contact Support 24/7</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => onNavigate("/faq")}>FAQs</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => onNavigate("/payment")}>Payment</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => onNavigate("/contact")}>Contact Support 24/7</li>
               </ul>
             </div>
             {/* Follow Us */}
@@ -285,6 +257,8 @@ export default function Index() {
               <h4 className="text-base md:text-lg font-bold text-white">
                 Follow US
               </h4>
+              
+
               <div className="space-y-1 md:space-y-2">
                 <h5 className="text-base md:text-lg font-bold text-white">
                   Stay in touch
