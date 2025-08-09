@@ -621,9 +621,9 @@ const Index = () => {
 
 
       {/* Footer */}
-      <footer className="py-10 md:py-16 border-t border-[#E7E9FF] bg-transparent">
-        <div className="container mx-auto px-4 md:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+      <footer className="mt-24 px-4 sm:px-8 lg:px-36">
+        <div className="bg-ticket-footer rounded-t-lg p-8 lg:p-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-left">
             {/* Logo and Copyright */}
             <div className="space-y-2 md:space-y-4 flex flex-col items-start">
               <img

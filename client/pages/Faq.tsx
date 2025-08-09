@@ -1,28 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const CloudDecoration = () => (
-  <div className="absolute right-0 bottom-0 opacity-34 w-[300px] h-[200px]">
-    <svg 
-      className="w-full h-full" 
-      viewBox="0 0 397 399" 
-      fill="none" 
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <g clipPath="url(#clip0_2346_219)">
-        <path 
-          d="M53.09 231.36C59.19 231.04 64.36 235.67 64.69 240.4C65.49 240.61 66.29 240.89 67.08 241.27C72.06 243.65 75.03 250.16 71.25 254.27C67.62 258.22 67.61 261.57 70.21 265.78C71.47 267.82 73.39 269.88 75.05 270.98C77.5 272.59 79.65 273.28 81.68 273.37C84.42 273.49 88.62 271.9 92.13 270.84C97.34 269.28 102.79 268.36 108.33 269.18C118.31 270.65 124.13 276.85 129.54 283.28C138.58 294.05 152.23 301.43 167.31 305.46C205.93 315.79 246.22 305.44 283.47 296.06C292 293.91 300.11 300.92 297.77 307.75C290.25 329.72 305.12 351.01 326.26 364.18C348.13 377.8 375.09 382.61 401.96 378.18C430.88 373.42 456.95 360.82 479.51 345.63C502.66 330.04 526.08 311.7 542 290.77C556.99 271.05 564.01 245.27 546.18 225.15C543.32 221.92 544.48 216.19 548 213.64C576.59 192.87 573.95 155.6 551.36 132.37C539.88 120.57 524.52 111.83 507.9 105.52C499.73 102.42 491.09 100.09 482.37 98.2602C475.68 96.8602 469.75 96.1402 466.97 90.2302C465.53 87.1802 464.24 84.1402 462.53 81.1702C447.9 55.9102 420.8 35.4602 388.71 25.6502C355.9 15.6202 319.97 16.8902 288.57 29.7702C257.62 42.4602 232.39 64.3802 221.33 91.4002C219.48 95.9202 213.14 99.9002 207.03 98.0402C183.48 90.8702 155.61 93.4002 135.87 106.68C116.16 119.94 107.2 140.8 110.5 161.25C111.55 167.79 102.27 171.53 95.78 170.41C71.19 166.15 35.93 171.47 25.3 192.6C21.03 201.08 22.89 211.28 28.5 219.28C34.16 227.37 42.45 231.92 53.12 231.35L53.09 231.36Z" 
-          fill="#C7E9F4"
-        />
-      </g>
-      <defs>
-        <clipPath id="clip0_2346_219">
-          <rect width="591.98" height="398.88" fill="white"/>
-        </clipPath>
-      </defs>
-    </svg>
-  </div>
-);
 
 const FAQItem = ({ question, isExpanded, onToggle, children }: {
   question: string;
@@ -50,18 +28,37 @@ const FAQItem = ({ question, isExpanded, onToggle, children }: {
   </div>
 );
 
+type FaqItem = {
+  q: string;
+  a: string;
+};
+
+function FaqList({ faqs }: { faqs: FaqItem[] }) {
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  return (
+    <div>
+      {faqs.map((faq, idx) => (
+        <FAQItem
+          key={faq.q}
+          question={faq.q}
+          isExpanded={expandedIndex === idx}
+          onToggle={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
+        >
+          <div>{faq.a}</div>
+        </FAQItem>
+      ))}
+    </div>
+  );
+}
+
 export default function Faq() {
   const navigate = useNavigate();
-  const [expandedFAQ, setExpandedFAQ] = useState<string | null>('about');
-
-  const toggleFAQ = (id: string) => {
-    setExpandedFAQ(expandedFAQ === id ? null : id);
-  };
 
   return (
     <div className="min-h-screen bg-ob-background font-plus-jakarta">
       {/* Header */}
-      <header className="container mx-auto px-4 lg:px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <header className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-36 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
           <img 
             src="/onboard/result.png" 
@@ -72,12 +69,18 @@ export default function Faq() {
           />
         </div>
         <nav className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
-          <Link to="/contact" className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-bold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors text-center">
+          <button
+            className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-bold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => navigate("/contact")}
+          >
             Get Support
-          </Link>
-          <Link to="/payment" className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-semibold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors text-center">
+          </button>
+          <button
+            className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-semibold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => navigate("/userform")}
+          >
             Book now
-          </Link>
+          </button>
         </nav>
       </header>
 
@@ -87,43 +90,40 @@ export default function Faq() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-ob-primary mb-8 leading-tight text-center">Frequently Asked Questions</h1>
           <div className="text-[#23235B] text-lg lg:text-xl font-semibold leading-relaxed mb-8">
             <section className="mt-8 lg:mt-16 mb-8">
-              <p className="text-lg sm:text-xl lg:text-2xl font-semibold text-black opacity-50 mb-2">
-                Check out our frequently asked questions below. Can't find what you're looking for?{' '}
-                <span className="text-ob-teal">Reach out to us now</span>
-              </p>
-            </section>
-
-            {/* FAQ Sections */}
-            <section className="space-y-4 mb-16">
-              <FAQItem 
-                question="Tickets & Reservations ?" 
-                isExpanded={false}
-                onToggle={() => {}}
-              />
-              
-              <FAQItem 
-                question="Issues With Your Order ?" 
-                isExpanded={false}
-                onToggle={() => {}}
-              />
-              
-              <FAQItem 
-                question="About Onplane ticket ?" 
-                isExpanded={expandedFAQ === 'about'}
-                onToggle={() => toggleFAQ('about')}
-              >
-                <p className="text-base font-light leading-relaxed">
-                  Check out our frequently asked questions below or reach out to our team for fast, friendly support
-                </p>
-                <div className="mt-6 space-y-4">
-                  <div className="border-b border-black/15 pb-4">
-                    <h4 className="text-xl font-semibold mb-2">Why Onplane ticket ?</h4>
-                  </div>
-                  <div className="border-b border-black/15 pb-4">
-                    <h4 className="text-xl font-semibold">How does Onplane ticket work ?</h4>
-                  </div>
+                <div className="w-full text-left">
+                  <FaqList
+                    faqs={[
+                      {
+                        q: "About Onplane ticket ? ",
+                        a: "Onplane tickets are real, verifiable flight reservations provided for visa applications and travel needs.",
+                      },
+                      {
+                        q: "Why Onplane ticket ? ",
+                        a: "We offer instant, secure, and affordable reservations trusted by embassies and travelers worldwide.",
+                      },
+                      {
+                        q: "How fast is your service? ",
+                        a: "Our service is fast, reliable, and provides support within 30 minutes on average.",
+                      },
+                      {
+                        q: "Tickets & Reservations ? ",
+                        a: "You can book, view, and manage your reservations easily through our platform.",
+                      },
+                      {
+                        q: "Issues With Your Order ? ",
+                        a: "Contact our support team 24/7 for any issues or questions regarding your order.",
+                      },
+                    ]}
+                  />
                 </div>
-              </FAQItem>
+                <div className="flex gap-2 md:gap-4 mt-8 justify-start">
+                  <button 
+                    className="bg-[#3839C9] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold text-base md:text-lg hover:bg-blue-700 transition-colors shadow-md"
+                    onClick={() => navigate("/faq")}
+                  >
+                    See More FAQ
+                  </button>
+                </div>
             </section>
 
             {/* Call to Action Section */}
@@ -138,7 +138,7 @@ export default function Faq() {
                 <span className="text-ob-teal">Reach Out To Us Now</span>
               </p>
               <div className="hidden lg:block">
-                <CloudDecoration />
+                
               </div>
             </section>
           </div>
@@ -148,7 +148,7 @@ export default function Faq() {
       {/* Footer */}
       <footer className="mt-24 px-4 sm:px-8 lg:px-36">
         <div className="bg-ticket-footer rounded-t-lg p-8 lg:p-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-left">
             {/* Logo and Copyright */}
             <div className="space-y-4">
               <div>

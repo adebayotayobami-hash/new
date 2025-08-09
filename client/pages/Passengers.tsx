@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, ArrowRight, Mail } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface PassengersProps {
   onNext: () => void;
@@ -13,16 +14,23 @@ export default function Passengers({ onNext, onBack, currentStep, onNavigate }: 
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const navigate = useNavigate();
 
   return (
+
+    
     <div className="min-h-screen bg-ticket-primary text-white">
       {/* Header */}
-      <header className="px-4 sm:px-8 lg:px-36 pt-12 pb-8">
-        <img 
-          src="https://api.builder.io/api/v1/image/assets/TEMP/546fa6d584538b821a4ae9a72451f346c3dd5fdd?width=588" 
-          alt="OnboardTicket" 
-          className="h-15 w-auto"
-        />
+      <header className="container mx-auto px-4 lg:px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
+          <img 
+            src="/onboard/result.png" 
+            alt="OnboardTicket Logo" 
+            className="h-[40px] sm:h-[59px] w-auto max-w-[200px] sm:max-w-[294px] cursor-pointer"
+            loading="eager"
+            onClick={() => navigate("/")}
+          />
+        </div>
       </header>
 
       <div className="px-4 sm:px-8 lg:px-36">
@@ -30,7 +38,7 @@ export default function Passengers({ onNext, onBack, currentStep, onNavigate }: 
         <div className="flex flex-col sm:flex-row gap-8 sm:gap-16 mb-12">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => onNavigate("route")}
+              onClick={() => navigate("route")}
               className="text-2xl font-bold text-white/60 hover:text-white transition-colors"
             >
               Route
@@ -41,7 +49,7 @@ export default function Passengers({ onNext, onBack, currentStep, onNavigate }: 
           </div>
           <div className="flex items-center gap-4">
             <button
-              onClick={() => onNavigate("confirmation")}
+              onClick={() => navigate("confirmation")}
               className="text-2xl font-bold text-white/60 hover:text-white transition-colors"
             >
               Confirmation
@@ -212,7 +220,7 @@ export default function Passengers({ onNext, onBack, currentStep, onNavigate }: 
       {/* Footer */}
       <footer className="mt-24 px-4 sm:px-8 lg:px-36">
         <div className="bg-ticket-footer rounded-t-lg p-8 lg:p-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-white">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-left">
             {/* Logo and Copyright */}
             <div className="space-y-4">
               <div>
@@ -220,7 +228,7 @@ export default function Passengers({ onNext, onBack, currentStep, onNavigate }: 
                   src="/onboard/result.png" 
                   alt="OnboardTicket Logo" 
                   className="w-40 h-10 mb-4 cursor-pointer"
-                  onClick={() => onNavigate("/")}
+                  onClick={() => navigate("/")}
                 />
                 <hr className="border-white mb-4" />
                 <div className="text-base font-semibold text-white">Onboardticket.com</div>
@@ -236,9 +244,9 @@ export default function Passengers({ onNext, onBack, currentStep, onNavigate }: 
                 About
               </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-white">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => onNavigate("/about")}>Who We are ?</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => onNavigate("/privacy-policy")}>Privacy Policy</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => onNavigate("/terms-conditions")}>Terms & Conditions</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/about")}>Who We are ?</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/privacy-policy")}>Privacy Policy</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/terms-conditions")}>Terms & Conditions</li>
               </ul>
             </div>
             {/* Get Help */}
@@ -247,9 +255,9 @@ export default function Passengers({ onNext, onBack, currentStep, onNavigate }: 
                 Get Help
               </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-white">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => onNavigate("/faq")}>FAQs</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => onNavigate("/payment")}>Payment</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => onNavigate("/contact")}>Contact Support 24/7</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/faq")}>FAQs</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/payment")}>Payment</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/contact")}>Contact Support 24/7</li>
               </ul>
             </div>
             {/* Follow Us */}

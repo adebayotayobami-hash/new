@@ -59,7 +59,7 @@ export default function ThankYou(props) {
       {/* Footer */}
       <footer className="mt-24 px-4 sm:px-8 lg:px-36">
         <div className="bg-ticket-footer rounded-t-lg p-8 lg:p-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-white">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-left">
             {/* Logo and Copyright */}
             <div className="space-y-4">
               <div>

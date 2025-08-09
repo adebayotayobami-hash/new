@@ -6,7 +6,7 @@ export default function TermsConditions() {
   return (
     <div className="min-h-screen bg-ob-background font-plus-jakarta">
       {/* Header */}
-      <header className="container mx-auto px-4 lg:px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <header className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-36 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
           <img 
             src="/onboard/result.png" 
@@ -17,10 +17,16 @@ export default function TermsConditions() {
           />
         </div>
         <nav className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
-          <button className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-bold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors">
+          <button
+            className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-bold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => navigate("/contact")}
+          >
             Get Support
           </button>
-          <button className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-semibold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors">
+          <button
+            className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-semibold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => navigate("/userform")}
+          >
             Book now
           </button>
         </nav>
@@ -181,7 +187,7 @@ export default function TermsConditions() {
       {/* Footer */}
       <footer className="mt-24 px-4 sm:px-8 lg:px-36">
         <div className="bg-ticket-footer rounded-t-lg p-8 lg:p-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-left">
             {/* Logo and Copyright */}
             <div className="space-y-4">
               <div>
