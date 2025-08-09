@@ -105,6 +105,14 @@ export default {
         'ticket-gray': '#4D4848',
         'ticket-gray-light': 'rgba(136, 125, 125, 0.46)',
         'ticket-text': '#524C4C',
+
+        // OnboardTicket custom colors
+        'ob-primary': '#3839C9',
+        'ob-teal': '#227D9B',
+        'ob-background': '#E7E9FF',
+        'ob-gray': '#A2A2A2',
+        'ob-dark': '#20242A',
+        'ob-text': '#303850',
       },
       borderRadius: {
         lg: "var(--radius)",

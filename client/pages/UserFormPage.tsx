@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Route from "./Route";
 import Passengers from "./Passengers";
 import Confirmation from "./Confirmation";
@@ -8,6 +9,7 @@ import ThankYou from "./ThankYou";
 type Step = "route" | "passengers" | "confirmation" | "search" | "thankyou";
 
 export default function UserFormPage() {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<Step>("route");
 
   const goToNextStep = () => {
@@ -46,18 +48,25 @@ export default function UserFormPage() {
     setCurrentStep(step);
   };
 
-  switch (currentStep) {
-    case "route":
-      return <Route onNext={goToNextStep} currentStep={currentStep} onNavigate={navigateToStep} />;
-    case "passengers":
-      return <Passengers onNext={goToNextStep} onBack={goToPreviousStep} currentStep={currentStep} onNavigate={navigateToStep} />;
-    case "confirmation":
-      return <Confirmation onNext={goToNextStep} onBack={goToPreviousStep} currentStep={currentStep} onNavigate={navigateToStep} />;
-    case "search":
-      return <SearchFlights onNext={goToNextStep} />;
-    case "thankyou":
-      return <ThankYou />;
-    default:
-      return <Route onNext={goToNextStep} currentStep={currentStep} onNavigate={navigateToStep} />;
-  }
+  return (
+    <>
+      
+      {(() => {
+        switch (currentStep) {
+          case "route":
+            return <Route onNext={goToNextStep} currentStep={currentStep} onNavigate={navigateToStep} />;
+          case "passengers":
+            return <Passengers onNext={goToNextStep} onBack={goToPreviousStep} currentStep={currentStep} onNavigate={navigateToStep} />;
+          case "confirmation":
+            return <Confirmation onNext={goToNextStep} onBack={goToPreviousStep} currentStep={currentStep} onNavigate={navigateToStep} />;
+          case "search":
+            return <SearchFlights onNext={goToNextStep} />;
+          case "thankyou":
+            return <ThankYou />;
+          default:
+            return <Route onNext={goToNextStep} currentStep={currentStep} onNavigate={navigateToStep} />;
+        }
+      })()}
+    </>
+  );
 }
