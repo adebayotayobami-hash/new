@@ -29,6 +29,7 @@ export default {
           "Helvetica",
           "sans-serif",
         ],
+        roboto: ["Roboto", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -74,7 +75,7 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // Brand Colors
+        // Brand Colors (merged)
         brand: {
           blue: "#3839C9",
           purple: "#191A78",
@@ -84,6 +85,14 @@ export default {
             primary: "#20242A",
             secondary: "#637996",
           },
+          primary: "#505BFB",
+          secondary: "#878EFF",
+          active: "#424BC9",
+          accent: "#C6FF9A",
+          dark: "#3839C9",
+        },
+        footer: {
+          bg: "rgba(192, 200, 255, 0.26)",
         },
       },
       borderRadius: {

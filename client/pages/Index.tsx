@@ -8,8 +8,11 @@ import {
   Instagram,
 } from "lucide-react";
 import TestimonialCarousel from "../components/ui/TestimonialCarousel";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-[#E7E9FF] font-jakarta overflow-x-hidden px-4 md:px-16 py-4 md:py-16">
       {/* Header */}
@@ -51,7 +54,10 @@ const Index = () => {
               </p>
 
               {/* CTA Button */}
-              <button className="flex items-center gap-3 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl hover:bg-blue-700 transition-colors shadow-lg">
+              <button
+                className="flex items-center gap-3 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl hover:bg-blue-700 transition-colors shadow-lg"
+                onClick={() => navigate("/userform")}
+              >
                 <Navigation className="w-5 h-5 md:w-6 md:h-6" />
                 Book Now
               </button>
@@ -211,7 +217,10 @@ const Index = () => {
       {/* CTA Section */}
       <section className="py-10 md:py-16">
         <div className="container mx-auto px-4 md:px-8 text-center">
-          <button className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl mx-auto hover:bg-blue-700 transition-colors shadow-lg">
+          <button
+            className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl mx-auto hover:bg-blue-700 transition-colors shadow-lg"
+            onClick={() => navigate("/userform")}
+          >
             <Navigation className="w-5 h-5 md:w-6 md:h-6" />
             Book Now
           </button>
@@ -397,7 +406,10 @@ const Index = () => {
       {/* CTA Section */}
       <section className="py-10 md:py-16">
         <div className="container mx-auto px-4 md:px-8 text-center">
-          <button className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl mx-auto hover:bg-blue-700 transition-colors shadow-lg">
+          <button
+            className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl mx-auto hover:bg-blue-700 transition-colors shadow-lg"
+            onClick={() => navigate("/userform")}
+          >
             <Navigation className="w-5 h-5 md:w-6 md:h-6" />
             Book Now
           </button>
@@ -464,7 +476,10 @@ const Index = () => {
       {/* CTA Section */}
       <section className="py-10 md:py-16">
         <div className="container mx-auto px-4 md:px-8 text-center">
-          <button className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl mx-auto hover:bg-blue-700 transition-colors shadow-lg">
+          <button
+            className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl mx-auto hover:bg-blue-700 transition-colors shadow-lg"
+            onClick={() => navigate("/userform")}
+          >
             <Navigation className="w-5 h-5 md:w-6 md:h-6" />
             Book Now
           </button>
@@ -535,7 +550,10 @@ const Index = () => {
                 <button className="border-2 border-[#5225B8] bg-transparent text-[#233789] px-6 md:px-8 py-2 md:py-3 rounded-xl font-bold text-base md:text-lg hover:bg-purple-50 transition-colors shadow-none">
                   See sample ticket
                 </button>
-                <button className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-8 py-2 md:py-3 rounded-xl font-semibold text-base md:text-lg hover:bg-blue-700 transition-colors">
+                <button
+                  className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-8 py-2 md:py-3 rounded-xl font-semibold text-base md:text-lg hover:bg-blue-700 transition-colors"
+                  onClick={() => navigate("/userform")}
+                >
                   <Navigation className="w-4 h-4 md:w-5 md:h-5" />
                   Book Now
                 </button>
