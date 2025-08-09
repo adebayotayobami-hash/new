@@ -94,6 +94,17 @@ export default {
         footer: {
           bg: "rgba(192, 200, 255, 0.26)",
         },
+        // Custom colors for OnboardTicket design
+        'ticket-primary': '#505BFB',
+        'ticket-secondary': '#878EFF',
+        'ticket-accent': '#C6FF9A',
+        'ticket-dark': '#424BC9',
+        'ticket-darker': '#3839C9',
+        'ticket-light': 'rgba(135, 142, 255, 0.38)',
+        'ticket-footer': 'rgba(192, 200, 255, 0.26)',
+        'ticket-gray': '#4D4848',
+        'ticket-gray-light': 'rgba(136, 125, 125, 0.46)',
+        'ticket-text': '#524C4C',
       },
       borderRadius: {
         lg: "var(--radius)",
