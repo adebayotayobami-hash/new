@@ -10,8 +10,78 @@ import {
 import TestimonialCarousel from "../components/ui/TestimonialCarousel";
 import { useNavigate } from "react-router-dom";
 
+const testimonials = [
+  {
+    name: "Daniel Ricciardo",
+    role: "Businessman",
+    text: "The experience of booking airfare through this website was amazing! The intuitive interface, wide selection of routes, and fast transaction process made my trip more enjoyable.",
+    img: "https://api.builder.io/api/v1/image/assets/TEMP/f4f31fe52ad073d5757f8f9684b13989bf5401c7?width=112"
+  },
+  {
+    name: "Sophia Lee",
+    role: "Student",
+    text: "Super fast and reliable! Got my reservation in minutes and it worked perfectly for my visa application.",
+    img: "https://randomuser.me/api/portraits/women/44.jpg"
+  },
+  {
+    name: "John Smith",
+    role: "Frequent Traveler",
+    text: "Affordable and trustworthy. I use this service every time I need proof of onward travel.",
+    img: "https://randomuser.me/api/portraits/men/32.jpg"
+  },
+  {
+    name: "Maria Garcia",
+    role: "Digital Nomad",
+    text: "The support team is fantastic and the process is seamless. Highly recommended!",
+    img: "https://randomuser.me/api/portraits/women/65.jpg"
+  },
+  {
+    name: "Ahmed Hassan",
+    role: "Entrepreneur",
+    text: "I was skeptical at first, but the reservation was real and verifiable. Great value!",
+    img: "https://randomuser.me/api/portraits/men/76.jpg"
+  },
+  {
+    name: "Emily Chen",
+    role: "Backpacker",
+    text: "Perfect for last-minute travel needs. The process is quick and easy.",
+    img: "https://randomuser.me/api/portraits/women/68.jpg"
+  },
+  {
+    name: "Carlos Ruiz",
+    role: "Tourist",
+    text: "I got my ticket instantly and it was accepted at the embassy. Will use again!",
+    img: "https://randomuser.me/api/portraits/men/41.jpg"
+  },
+  {
+    name: "Priya Patel",
+    role: "Consultant",
+    text: "The best service for onward tickets. The customer support is responsive and helpful.",
+    img: "https://randomuser.me/api/portraits/women/12.jpg"
+  },
+  {
+    name: "Liam O'Connor",
+    role: "Remote Worker",
+    text: "Easy to use and very affordable. I recommend it to all my friends.",
+    img: "https://randomuser.me/api/portraits/men/23.jpg"
+  },
+  {
+    name: "Fatima Zahra",
+    role: "Student",
+    text: "Helped me get my visa without any hassle. Thank you!",
+    img: "https://randomuser.me/api/portraits/women/50.jpg"
+  }
+];
+
 const Index = () => {
   const navigate = useNavigate();
+  const [testimonialIdxLeft, setTestimonialIdxLeft] = useState(0);
+  const [testimonialIdxRight, setTestimonialIdxRight] = useState(1);
+  const totalTestimonials = testimonials.length;
+  const prevTestimonialLeft = () => setTestimonialIdxLeft((testimonialIdxLeft - 1 + totalTestimonials) % totalTestimonials);
+  const nextTestimonialLeft = () => setTestimonialIdxLeft((testimonialIdxLeft + 1) % totalTestimonials);
+  const prevTestimonialRight = () => setTestimonialIdxRight((testimonialIdxRight - 1 + totalTestimonials) % totalTestimonials);
+  const nextTestimonialRight = () => setTestimonialIdxRight((testimonialIdxRight + 1) % totalTestimonials);
 
   return (
     <div className="min-h-screen bg-[#E7E9FF] font-jakarta overflow-x-hidden px-4 md:px-16 py-4 md:py-16">
@@ -263,25 +333,23 @@ const Index = () => {
                   What They say About our Services
                 </h3>
                 <blockquote className="text-base md:text-xl font-semibold text-[#20242A] mb-4 md:mb-8 leading-relaxed">
-                  "The experience of booking airfare through this website was
-                  amazing! The intuitive interface, wide selection of routes,
-                  and fast transaction process made my trip more enjoyable."
+                  "{testimonials[testimonialIdxLeft].text}"
                 </blockquote>
 
                 <div className="flex items-center gap-2 md:gap-4 justify-center lg:justify-start">
                   <div className="w-10 h-10 md:w-16 md:h-16 bg-[#9BF1D5] rounded-full flex items-center justify-center overflow-hidden">
                     <img
-                      src="https://api.builder.io/api/v1/image/assets/TEMP/f4f31fe52ad073d5757f8f9684b13989bf5401c7?width=112"
+                      src={testimonials[testimonialIdxLeft].img}
                       alt="Profile"
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div>
                     <h4 className="font-semibold text-[#20242A] text-sm md:text-base">
-                      Daniel Ricciardo
+                      {testimonials[testimonialIdxLeft].name}
                     </h4>
                     <p className="text-[#A2A2A2] text-xs md:text-sm">
-                      Businessman
+                      {testimonials[testimonialIdxLeft].role}
                     </p>
                   </div>
                 </div>
@@ -289,21 +357,47 @@ const Index = () => {
 
               {/* Navigation Buttons */}
               <div className="flex gap-2 md:gap-4 justify-center lg:justify-start mt-2 md:mt-4">
-                <button className="w-8 h-8 md:w-14 md:h-8 bg-[#A49AFF] rounded-full flex items-center justify-center hover:bg-purple-400 transition-colors">
+                <button className="w-8 h-8 md:w-14 md:h-8 bg-[#A49AFF] rounded-full flex items-center justify-center hover:bg-purple-400 transition-colors" onClick={prevTestimonialLeft}>
                   <ArrowLeft className="w-4 h-4 text-white" />
                 </button>
-                <button className="w-8 h-8 md:w-14 md:h-8 bg-[#878EFF] rounded-full flex items-center justify-center hover:bg-purple-500 transition-colors">
+                <button className="w-8 h-8 md:w-14 md:h-8 bg-[#878EFF] rounded-full flex items-center justify-center hover:bg-purple-500 transition-colors" onClick={nextTestimonialLeft}>
                   <ArrowRight className="w-4 h-4 text-white" />
                 </button>
               </div>
             </div>
 
-            {/* Right Map */}
+            {/* Right Card - Independent Testimonial */}
             <div className="grid grid-cols-1 gap-8 md:gap-12 items-center">
               <div className="space-y-6 md:space-y-8">
-                <div className="text-center lg:text-left">
-
-                  <TestimonialCarousel />
+                <div className="text-center lg:text-left bg-white/90 rounded-2xl shadow-lg p-8 md:p-12">
+                  <blockquote className="text-base md:text-xl font-semibold text-[#20242A] mb-4 md:mb-8 leading-relaxed">
+                    "{testimonials[testimonialIdxRight].text}"
+                  </blockquote>
+                  <div className="flex items-center gap-2 md:gap-4 justify-center lg:justify-start">
+                    <div className="w-10 h-10 md:w-16 md:h-16 bg-[#9BF1D5] rounded-full flex items-center justify-center overflow-hidden">
+                      <img
+                        src={testimonials[testimonialIdxRight].img}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-[#20242A] text-sm md:text-base">
+                        {testimonials[testimonialIdxRight].name}
+                      </h4>
+                      <p className="text-[#A2A2A2] text-xs md:text-sm">
+                        {testimonials[testimonialIdxRight].role}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 md:gap-4 justify-center lg:justify-start mt-4">
+                    <button className="w-8 h-8 md:w-14 md:h-8 bg-[#A49AFF] rounded-full flex items-center justify-center hover:bg-purple-400 transition-colors" onClick={prevTestimonialRight}>
+                      <ArrowLeft className="w-4 h-4 text-white" />
+                    </button>
+                    <button className="w-8 h-8 md:w-14 md:h-8 bg-[#878EFF] rounded-full flex items-center justify-center hover:bg-purple-500 transition-colors" onClick={nextTestimonialRight}>
+                      <ArrowRight className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -480,7 +574,21 @@ const Index = () => {
         </div>
       </section>
 
-      
+      {/* CTA Section */}
+      <section className="py-10 md:py-16">
+        <div className="container mx-auto px-4 md:px-8 text-center">
+          <button
+            className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl mx-auto hover:bg-blue-700 transition-colors shadow-lg"
+            onClick={() => navigate("/userform")}
+          >
+            <Navigation className="w-5 h-5 md:w-6 md:h-6" />
+            Book Now
+          </button>
+          <p className="text-xs md:text-sm font-bold text-[#637996] mt-2 md:mt-4">
+            instant & secure Booking from Just 10$
+          </p>
+        </div>
+      </section>
 
       {/* Reasons Section (responsive cards) */}
       <section className="py-14 md:py-20">
