@@ -10,7 +10,7 @@ export default function ThankYou(props) {
   return (
     <div className="min-h-screen bg-ticket-primary text-white">
       {/* Header */}
-      <header className="container mx-auto px-4 lg:px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <header className="text-left">
         <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
           <img 
             src="/onboard/result.png" 
@@ -19,10 +19,6 @@ export default function ThankYou(props) {
             loading="eager"
             onClick={() => navigate("/")}
           />
-        </div>
-        <div className="flex gap-8">
-          <span className="text-lg font-bold text-white/90 cursor-pointer" onClick={() => navigate("/contact")}>Get Support</span>
-          <span className="text-lg font-bold text-white/90 cursor-pointer" onClick={() => navigate("/userform")}>Book now</span>
         </div>
       </header>
 
@@ -61,7 +57,7 @@ export default function ThankYou(props) {
         <div className="bg-ticket-footer rounded-t-lg p-8 lg:p-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-left">
             {/* Logo and Copyright */}
-            <div className="space-y-4">
+            <div className="space-y-4 text-left">
               <div>
                 <img 
                   src="/onboard/result.png" 
@@ -70,47 +66,45 @@ export default function ThankYou(props) {
                   onClick={() => navigate("/")}
                 />
                 <hr className="border-white mb-4" />
-                <div className="text-base font-semibold text-white">Onboardticket.com</div>
-                <div className="text-xs opacity-80 mt-2 text-white">© 2025 — Copyright</div>
+                <div className="text-base font-semibold text-white text-left">Onboardticket.com</div>
+                <div className="text-xs opacity-80 mt-2 text-white text-left">© 2025 — Copyright</div>
               </div>
-              <p className="text-xs opacity-80 leading-relaxed text-white">
+              <p className="text-xs opacity-80 leading-relaxed text-white text-left">
                 OnboardTicket is committed to upholding the highest standards in compliance with international civil aviation regulations and ethical booking practices. This includes, but is not limited to, strict avoidance of misuse of booking classes, fraudulent activities, duplicate, speculative, or fictitious reservations. Users who engage in repeated cancellations without legitimate intent will be subject to monitoring, and may face usage restrictions or permanent bans from our platform.
               </p>
             </div>
             {/* About */}
-            <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center ">
-              <h4 className="text-base md:text-lg font-bold text-white">
+            <div className="space-y-2 md:space-y-4 flex flex-col items-start md:items-center justify-center text-left">
+              <h4 className="text-base md:text-lg font-bold text-white text-left">
                 About
               </h4>
-              <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-white">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/about")}>Who We are ?</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/privacy-policy")}>Privacy Policy</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/terms-conditions")}>Terms & Conditions</li>
+              <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-white text-left">
+                <li className="cursor-pointer hover:text-[#3839C9] text-left" onClick={() => navigate("/about")}>Who We are ?</li>
+                <li className="cursor-pointer hover:text-[#3839C9] text-left" onClick={() => navigate("/privacy-policy")}>Privacy Policy</li>
+                <li className="cursor-pointer hover:text-[#3839C9] text-left" onClick={() => navigate("/terms-conditions")}>Terms & Conditions</li>
               </ul>
             </div>
             {/* Get Help */}
-            <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center ">
-              <h4 className="text-base md:text-lg font-bold text-white">
+            <div className="space-y-2 md:space-y-4 flex flex-col items-start md:items-center justify-center text-left">
+              <h4 className="text-base md:text-lg font-bold text-white text-left">
                 Get Help
               </h4>
-              <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-white">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/faq")}>FAQs</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/payment")}>Payment</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/contact")}>Contact Support 24/7</li>
+              <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-white text-left">
+                <li className="cursor-pointer hover:text-[#3839C9] text-left" onClick={() => navigate("/faq")}>FAQs</li>
+                <li className="cursor-pointer hover:text-[#3839C9] text-left" onClick={() => navigate("/payment")}>Payment</li>
+                <li className="cursor-pointer hover:text-[#3839C9] text-left" onClick={() => navigate("/contact")}>Contact Support 24/7</li>
               </ul>
             </div>
             {/* Follow Us */}
-            <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center ">
-              <h4 className="text-base md:text-lg font-bold text-white">
+            <div className="space-y-2 md:space-y-4 flex flex-col items-start md:items-center justify-center text-left">
+              <h4 className="text-base md:text-lg font-bold text-white text-left">
                 Follow US
               </h4>
-              
-
-              <div className="space-y-1 md:space-y-2">
-                <h5 className="text-base md:text-lg font-bold text-white">
+              <div className="space-y-1 md:space-y-2 text-left">
+                <h5 className="text-base md:text-lg font-bold text-white text-left">
                   Stay in touch
                 </h5>
-                <p className="text-xs sm:text-sm font-semibold text-white">
+                <p className="text-xs sm:text-sm font-semibold text-white text-left">
                   Blog
                 </p>
               </div>

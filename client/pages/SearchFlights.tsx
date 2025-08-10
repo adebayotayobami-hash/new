@@ -20,19 +20,15 @@ export default function SearchFlights({ onNext }: SearchFlightsProps) {
   return (
     <div className="min-h-screen bg-ticket-primary text-white">
       {/* Header */}
-      <header className="px-4 sm:px-8 lg:px-36 pt-12 pb-8 flex justify-between items-center">
-        <img 
-          src="https://api.builder.io/api/v1/image/assets/TEMP/546fa6d584538b821a4ae9a72451f346c3dd5fdd?width=588" 
-          alt="OnboardTicket" 
-          className="h-15 w-auto"
-        />
-        <div className="flex gap-8">
-          <button onClick={() => navigate("/contact")} className="text-lg font-bold text-white/90">
-            Get Support
-          </button>
-          <button onClick={() => navigate("/userform")} className="text-lg font-bold text-white/90">
-            Book now
-          </button>
+      <header className="text-left">
+        <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
+          <img 
+            src="/onboard/result.png" 
+            alt="OnboardTicket Logo" 
+            className="h-[40px] sm:h-[59px] w-auto max-w-[200px] sm:max-w-[294px] cursor-pointer"
+            loading="eager"
+            onClick={() => navigate("/")}
+          />
         </div>
       </header>
 
@@ -75,6 +71,15 @@ export default function SearchFlights({ onNext }: SearchFlightsProps) {
           Continue
         </button>
       </div>
+
+      {/* Footer */}
+      <footer className="mt-24 px-4 sm:px-8 lg:px-36">
+        <div className="bg-ticket-footer rounded-t-lg p-8 lg:p-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-left">
+            {/* ...existing footer content... */}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
