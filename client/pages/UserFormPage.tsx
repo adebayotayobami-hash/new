@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Route from "./Route";
 import Passengers from "./Passengers";
 import Confirmation from "./Confirmation";
@@ -8,9 +8,22 @@ import ThankYou from "./ThankYou";
 
 type Step = "route" | "passengers" | "confirmation" | "search" | "thankyou";
 
-export default function UserFormPage() {
+export default function UserFormPage({ step }: { step?: string }) {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<Step>("route");
+  const location = useLocation();
+  const [currentStep, setCurrentStep] = useState<Step>(step as Step || "route");
+
+  useEffect(() => {
+    if (step) {
+      setCurrentStep(step as Step);
+    } else {
+      // fallback: try to infer from path
+      const path = location.pathname.split("/")[2];
+      if (path && ["route","passengers","confirmation","search","thankyou"].includes(path)) {
+        setCurrentStep(path as Step);
+      }
+    }
+  }, [step, location.pathname]);
 
   const goToNextStep = () => {
     switch (currentStep) {

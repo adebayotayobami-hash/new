@@ -28,6 +28,11 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/userform" element={<UserFormPage />} />
+          <Route path="/userform/route" element={<UserFormPage step="route" />} />
+          <Route path="/userform/passengers" element={<UserFormPage step="passengers" />} />
+          <Route path="/userform/confirmation" element={<UserFormPage step="confirmation" />} />
+          <Route path="/userform/search" element={<UserFormPage step="search" />} />
+          <Route path="/userform/thankyou" element={<UserFormPage step="thankyou" />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/faq" element={<Faq />} />

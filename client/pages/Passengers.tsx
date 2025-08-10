@@ -38,7 +38,7 @@ export default function Passengers({ onNext, onBack, currentStep, onNavigate }: 
         <div className="flex flex-col sm:flex-row gap-8 sm:gap-16 mb-12">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate("route")}
+              onClick={() => navigate("/userform/route")}
               className="text-2xl font-bold text-white/60 hover:text-white transition-colors"
             >
               Route
@@ -49,7 +49,7 @@ export default function Passengers({ onNext, onBack, currentStep, onNavigate }: 
           </div>
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate("confirmation")}
+              onClick={() => navigate("/userform/confirmation")}
               className="text-2xl font-bold text-white/60 hover:text-white transition-colors"
             >
               Confirmation
