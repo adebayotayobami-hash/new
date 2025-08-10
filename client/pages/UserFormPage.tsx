@@ -63,7 +63,7 @@ export default function UserFormPage({ step }: { step?: string }) {
 
   return (
     <>
-      <header className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-36 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <header >
         {/* Add your header content here */}
       </header>
       {(() => {
@@ -82,9 +82,9 @@ export default function UserFormPage({ step }: { step?: string }) {
             return <Route onNext={goToNextStep} currentStep={currentStep} onNavigate={navigateToStep} />;
         }
       })()}
-      <footer className="mt-24 px-4 sm:px-8 lg:px-36">
-        <div className="bg-ticket-footer rounded-t-lg p-8 lg:p-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-left">
+      <footer>
+        <div>
+          <div>
             {/* ...existing code... */}
           </div>
         </div>

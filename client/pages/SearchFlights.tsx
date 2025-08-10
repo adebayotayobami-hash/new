@@ -1,10 +1,13 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface SearchFlightsProps {
   onNext: () => void;
 }
 
 export default function SearchFlights({ onNext }: SearchFlightsProps) {
+  const navigate = useNavigate();
+
   useEffect(() => {
     // Auto-advance after 3 seconds
     const timer = setTimeout(() => {
@@ -24,8 +27,12 @@ export default function SearchFlights({ onNext }: SearchFlightsProps) {
           className="h-15 w-auto"
         />
         <div className="flex gap-8">
-          <span className="text-lg font-bold text-white/90">Get Support</span>
-          <span className="text-lg font-bold text-white/90">Book now</span>
+          <button onClick={() => navigate("/contact")} className="text-lg font-bold text-white/90">
+            Get Support
+          </button>
+          <button onClick={() => navigate("/userform")} className="text-lg font-bold text-white/90">
+            Book now
+          </button>
         </div>
       </header>
 

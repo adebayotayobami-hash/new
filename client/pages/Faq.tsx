@@ -70,14 +70,14 @@ export default function Faq() {
         </div>
         <nav className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
           <button
-            className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-bold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors"
             onClick={() => navigate("/contact")}
+            className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-bold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors"
           >
             Get Support
           </button>
           <button
-            className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-semibold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors"
             onClick={() => navigate("/userform")}
+            className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-semibold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors"
           >
             Book now
           </button>

@@ -21,8 +21,8 @@ export default function ThankYou(props) {
           />
         </div>
         <div className="flex gap-8">
-          <span className="text-lg font-bold text-white/90">Get Support</span>
-          <span className="text-lg font-bold text-white/90">Book now</span>
+          <span className="text-lg font-bold text-white/90 cursor-pointer" onClick={() => navigate("/contact")}>Get Support</span>
+          <span className="text-lg font-bold text-white/90 cursor-pointer" onClick={() => navigate("/userform")}>Book now</span>
         </div>
       </header>
 
