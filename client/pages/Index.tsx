@@ -584,11 +584,11 @@ const Index = () => {
             <FaqCard
               faqs={[
                 {
-                  q: "About Onplane ticket ? ",
-                  a: "Onplane tickets are real, verifiable flight reservations provided for visa applications and travel needs.",
+                  q: "About Onboard-ticket ticket ? ",
+                  a: "Onboard-ticket tickets are real, verifiable flight reservations provided for visa applications and travel needs.",
                 },
                 {
-                  q: "Why Onplane ticket ? ",
+                  q: "Why Onboard-ticket ? ",
                   a: "We offer instant, secure, and affordable reservations trusted by embassies and travelers worldwide.",
                 },
                 {
