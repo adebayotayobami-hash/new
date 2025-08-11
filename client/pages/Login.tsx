@@ -101,9 +101,20 @@ export default function Login() {
                 Welcome Back
               </h1>
               <p className="text-lg text-[#637996] mb-6">
-                Sign in to your account to manage your bookings
+                {isAdminRequired
+                  ? 'Admin access required. Please sign in with admin credentials.'
+                  : 'Sign in to your account to manage your bookings'
+                }
               </p>
             </div>
+
+            {isAdminRequired && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-blue-700 text-sm font-medium">
+                  🔒 This page requires administrator privileges. Please sign in with an admin account.
+                </p>
+              </div>
+            )}
 
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
