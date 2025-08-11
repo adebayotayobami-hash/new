@@ -573,15 +573,27 @@ export default function Payment() {
                 Secure Payment
               </h1>
               <div className="space-y-2 text-white">
+                {selectedFlight && (
+                  <div className="mb-4 p-3 bg-white/10 rounded-lg">
+                    <div className="text-sm text-white/90 mb-1">Selected Flight</div>
+                    <div className="text-xs text-white/70">
+                      {selectedFlight.validatingAirlineCodes?.[0]} • {getCurrency()} {parseInt(selectedFlight.price?.total || '0').toLocaleString()} per person
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center gap-8">
-                  <span className="text-lg lg:text-xl font-bold">TOTAL:</span>
-                  <span className="text-xl lg:text-2xl font-bold">${calculateTotal()}</span>
+                  <span className="text-lg lg:text-xl font-bold">Base Price:</span>
+                  <span className="text-xl lg:text-2xl font-bold">{getCurrency()}{getBasePrice().toFixed(2)}</span>
                 </div>
                 <div className="flex items-center gap-8">
                   <span className="text-lg lg:text-xl font-bold">Passengers:</span>
                   <span className="text-xl lg:text-2xl font-bold">
                     {passengerData?.passengers?.length || 1}
                   </span>
+                </div>
+                <div className="flex items-center gap-8">
+                  <span className="text-lg lg:text-xl font-bold">TOTAL:</span>
+                  <span className="text-xl lg:text-2xl font-bold">{getCurrency()}{calculateTotal().toFixed(2)}</span>
                 </div>
                 {routeData && (
                   <div className="flex items-center gap-8">
@@ -822,7 +834,7 @@ export default function Payment() {
                       Processing Payment...
                     </div>
                   ) : (
-                    `PAY $${calculateTotal()}`
+                    `PAY ${getCurrency()}${calculateTotal().toFixed(2)}`
                   )}
                 </button>
               </div>
@@ -846,7 +858,7 @@ export default function Payment() {
                   <div className="bg-white/80 border border-purple-200 rounded-lg p-4 mb-4">
                     <div className="flex justify-between items-center">
                       <span className="font-semibold text-gray-700">Total Amount:</span>
-                      <span className="font-bold text-xl text-purple-600">${calculateTotal()}</span>
+                      <span className="font-bold text-xl text-purple-600">{getCurrency()}{calculateTotal().toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm text-gray-600 mt-2">
                       <span>Passengers:</span>
@@ -857,7 +869,7 @@ export default function Payment() {
                   {bookingData && (
                     <StripePaymentForm
                       amount={calculateTotal()}
-                      currency="USD"
+                      currency={getCurrency().replace('$', '') || 'USD'}
                       bookingId={bookingData.id}
                       onSuccess={(paymentIntentId) => {
                         console.log('Stripe payment successful:', paymentIntentId);
@@ -899,7 +911,7 @@ export default function Payment() {
                   <div className="bg-white border border-blue-200 rounded-lg p-4 mb-4">
                     <div className="flex justify-between items-center">
                       <span className="font-semibold text-gray-700">Total Amount:</span>
-                      <span className="font-bold text-xl text-[#0070ba]">${calculateTotal()}</span>
+                      <span className="font-bold text-xl text-[#0070ba]">{getCurrency()}{calculateTotal().toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm text-gray-600 mt-2">
                       <span>Passengers:</span>
@@ -926,7 +938,7 @@ export default function Payment() {
                   ) : (
                     <div className="flex items-center justify-center gap-3">
                       <span>Pay with PayPal</span>
-                      <span className="text-lg">$${calculateTotal()}</span>
+                      <span className="text-lg">{getCurrency()}{calculateTotal().toFixed(2)}</span>
                     </div>
                   )}
                 </button>
