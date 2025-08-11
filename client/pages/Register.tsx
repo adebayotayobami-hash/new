@@ -139,6 +139,29 @@ export default function Register() {
               </div>
             )}
 
+            {success && verificationSent && (
+              <div className="mb-6 p-6 bg-green-50 border border-green-200 rounded-lg">
+                <div className="text-center">
+                  <Mail className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-green-800 mb-2">Account Created Successfully!</h3>
+                  <p className="text-green-700 text-sm mb-4">
+                    We've sent a verification email to <strong>{formData.email}</strong>.
+                    Please check your inbox and click the verification link to activate your account.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/login')}
+                    className="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors mb-2"
+                  >
+                    Continue to Sign In
+                  </button>
+                  <p className="text-xs text-green-600">
+                    Didn't receive the email? Check your spam folder or contact support.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Title Selection */}
               <div>
