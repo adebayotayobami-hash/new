@@ -91,6 +91,8 @@ export interface Booking {
   createdAt: string;
   updatedAt: string;
   ticketUrl?: string;
+  selectedFlight?: FlightOffer | null;
+  basePrice?: number;
 }
 
 export interface BookingResponse {
