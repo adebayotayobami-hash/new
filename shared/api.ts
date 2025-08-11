@@ -75,6 +75,8 @@ export interface BookingRequest {
   passengers: Passenger[];
   contactEmail: string;
   termsAccepted: boolean;
+  selectedFlight?: FlightOffer | null;
+  totalAmount?: number;
 }
 
 export interface Booking {
