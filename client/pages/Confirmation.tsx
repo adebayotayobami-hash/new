@@ -15,6 +15,7 @@ interface BookingData {
   route: FlightRoute | null;
   passengers: Passenger[];
   contactEmail: string;
+  selectedFlight: any | null;
 }
 
 export default function Confirmation({ onNext, onBack, currentStep, onNavigate }: ConfirmationProps) {
@@ -26,7 +27,8 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
   const [bookingData, setBookingData] = useState<BookingData>({
     route: null,
     passengers: [],
-    contactEmail: ""
+    contactEmail: "",
+    selectedFlight: null
   });
 
   // Load saved booking data
@@ -43,6 +45,13 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
         // Load passenger data
         const savedPassengers = localStorage.getItem('bookingPassengers');
         const savedContactEmail = localStorage.getItem('bookingContactEmail');
+
+        // Load selected flight data
+        const savedFlight = localStorage.getItem('selectedFlight');
+        let selectedFlight = null;
+        if (savedFlight) {
+          selectedFlight = JSON.parse(savedFlight);
+        }
         
         let passengers: Passenger[] = [];
         let contactEmail = "";
@@ -58,10 +67,11 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
         setBookingData({
           route,
           passengers,
-          contactEmail
+          contactEmail,
+          selectedFlight
         });
 
-        console.log('Loaded booking data:', { route, passengers, contactEmail });
+        console.log('Loaded booking data:', { route, passengers, contactEmail, selectedFlight });
       } catch (error) {
         console.error('Error loading booking data:', error);
         setError('Error loading booking data. Please go back and try again.');
@@ -71,8 +81,20 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
     loadBookingData();
   }, []);
 
-  // Calculate total amount ($15 per passenger)
-  const totalAmount = bookingData.passengers.length * 15;
+  // Calculate total amount based on selected flight or fallback to $15
+  const calculateTotalAmount = () => {
+    if (bookingData.selectedFlight && bookingData.selectedFlight.price) {
+      const flightPrice = parseFloat(bookingData.selectedFlight.price.total);
+      return flightPrice * bookingData.passengers.length;
+    }
+    // Fallback to $15 per passenger if no flight selected
+    return bookingData.passengers.length * 15;
+  };
+
+  const totalAmount = calculateTotalAmount();
+  const basePrice = bookingData.selectedFlight && bookingData.selectedFlight.price
+    ? parseFloat(bookingData.selectedFlight.price.total)
+    : 15;
 
   // Handle booking creation
   const handleCreateBooking = async () => {
@@ -99,7 +121,9 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
         route: bookingData.route,
         passengers: bookingData.passengers,
         contactEmail: bookingData.contactEmail,
-        termsAccepted: acceptTerms
+        termsAccepted: acceptTerms,
+        selectedFlight: bookingData.selectedFlight || null,
+        totalAmount: totalAmount
       };
 
       console.log('Creating booking:', bookingRequest);
@@ -278,9 +302,18 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
               <h3 className="text-xl font-bold mb-4 text-[#F6F6FF]">Booking Summary</h3>
               
               <div className="space-y-3">
+                {bookingData.selectedFlight && (
+                  <div className="mb-4 p-3 bg-ticket-accent/20 rounded-lg">
+                    <div className="text-sm text-white/90 mb-2">Selected Flight</div>
+                    <div className="text-xs text-white/70">
+                      {bookingData.selectedFlight.validatingAirlineCodes?.[0]} Flight
+                      {bookingData.selectedFlight.price?.currency} {parseInt(bookingData.selectedFlight.price?.total || '0').toLocaleString()}
+                    </div>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-white/70">Base price per passenger</span>
-                  <span className="font-semibold">$15.00</span>
+                  <span className="font-semibold">${basePrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white/70">Number of passengers</span>
@@ -289,7 +322,9 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
                 <div className="pt-3 border-t border-white/20">
                   <div className="flex justify-between text-lg">
                     <span className="font-bold">Total Amount</span>
-                    <span className="font-bold text-ticket-accent">${totalAmount}.00</span>
+                    <span className="font-bold text-ticket-accent">
+                      {bookingData.selectedFlight?.price?.currency || '$'}{totalAmount.toFixed(2)}
+                    </span>
                   </div>
                 </div>
               </div>
