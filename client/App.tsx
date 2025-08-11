@@ -10,6 +10,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React, { Suspense } from "react";
 import { AuthProvider } from "./hooks/useAuth";
 import { NotificationProvider } from "./hooks/useNotifications";
+import { AuthProtectedRoute, AdminProtectedRoute } from "./components/ProtectedRoute";
 
 // Lazy load large/rarely used pages for faster initial load
 const Index = React.lazy(() => import("./pages/Index"));
@@ -51,10 +52,26 @@ const App = () => (
                 <Route path="/userform/thankyou" element={<UserFormPage step="thankyou" />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/booking-history" element={<BookingHistory />} />
-                <Route path="/support-tickets" element={<SupportTickets />} />
-                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/dashboard" element={
+                  <AuthProtectedRoute>
+                    <Dashboard />
+                  </AuthProtectedRoute>
+                } />
+                <Route path="/booking-history" element={
+                  <AuthProtectedRoute>
+                    <BookingHistory />
+                  </AuthProtectedRoute>
+                } />
+                <Route path="/support-tickets" element={
+                  <AuthProtectedRoute>
+                    <SupportTickets />
+                  </AuthProtectedRoute>
+                } />
+                <Route path="/admin" element={
+                  <AdminProtectedRoute>
+                    <AdminDashboard />
+                  </AdminProtectedRoute>
+                } />
                 <Route path="/payment/success" element={<PaymentSuccess />} />
                 <Route path="/payment/cancel" element={<PaymentCancel />} />
                 <Route path="/about" element={<About />} />
