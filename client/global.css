@@ -151,9 +151,9 @@
     rgba(154, 151, 237, 0.52) 94.71%
   );
 
-    /* Custom variables for OnboardTicket */
+  /* Custom variables for OnboardTicket */
   .brand-gradient {
-    background: linear-gradient(135deg, #505BFB 0%, #424BC9 100%);
+    background: linear-gradient(135deg, #505bfb 0%, #424bc9 100%);
   }
 
   .footer-overlay {

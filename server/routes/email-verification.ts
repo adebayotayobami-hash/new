@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
-import crypto from 'crypto';
-import { z } from 'zod';
+import crypto from "crypto";
+import { z } from "zod";
 
 // In-memory storage for verification tokens (use database in production)
 interface VerificationToken {
@@ -16,45 +16,54 @@ let verificationTokens: VerificationToken[] = [];
 // Clean up expired tokens
 const cleanupExpiredTokens = () => {
   const now = new Date();
-  verificationTokens = verificationTokens.filter(token => token.expiresAt > now);
+  verificationTokens = verificationTokens.filter(
+    (token) => token.expiresAt > now,
+  );
 };
 
 // Generate verification token
 const generateVerificationToken = (): string => {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString("hex");
 };
 
 // Create verification token
-export const createVerificationToken = (email: string, userId?: string): string => {
+export const createVerificationToken = (
+  email: string,
+  userId?: string,
+): string => {
   cleanupExpiredTokens();
-  
+
   const token = generateVerificationToken();
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours expiry
-  
+
   // Remove any existing tokens for this email
-  verificationTokens = verificationTokens.filter(t => t.email !== email);
-  
+  verificationTokens = verificationTokens.filter((t) => t.email !== email);
+
   // Add new token
   verificationTokens.push({
     email,
     token,
     expiresAt,
     verified: false,
-    userId
+    userId,
   });
-  
+
   console.log(`Created verification token for ${email}`);
   return token;
 };
 
 // Send verification email
-const sendVerificationEmail = async (email: string, token: string, userName?: string) => {
-  const verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:8080'}/verify-email?token=${token}`;
-  
+const sendVerificationEmail = async (
+  email: string,
+  token: string,
+  userName?: string,
+) => {
+  const verificationUrl = `${process.env.CLIENT_URL || "http://localhost:8080"}/verify-email?token=${token}`;
+
   const emailData = {
     to: email,
-    subject: 'Verify Your OnboardTicket Account',
+    subject: "Verify Your OnboardTicket Account",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -63,7 +72,7 @@ const sendVerificationEmail = async (email: string, token: string, userName?: st
         </div>
         
         <div style="background: #f8f9ff; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
-          <h2 style="color: #20242A; font-size: 24px; margin: 0 0 20px 0;">Welcome${userName ? ` ${userName}` : ''}!</h2>
+          <h2 style="color: #20242A; font-size: 24px; margin: 0 0 20px 0;">Welcome${userName ? ` ${userName}` : ""}!</h2>
           <p style="color: #637996; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
             Thank you for creating your OnboardTicket account. To complete your registration and start booking flight reservations, please verify your email address.
           </p>
@@ -90,23 +99,23 @@ const sendVerificationEmail = async (email: string, token: string, userName?: st
           </p>
         </div>
       </div>
-    `
+    `,
   };
 
   try {
     // In a real app, send via your email service (SendGrid, etc.)
-    console.log('Verification email would be sent:', emailData);
-    
+    console.log("Verification email would be sent:", emailData);
+
     // If you have email service configured, use it:
     // const response = await fetch('/api/email/send', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
     //   body: JSON.stringify(emailData)
     // });
-    
+
     return true;
   } catch (error) {
-    console.error('Failed to send verification email:', error);
+    console.error("Failed to send verification email:", error);
     return false;
   }
 };
@@ -115,51 +124,51 @@ const sendVerificationEmail = async (email: string, token: string, userName?: st
 const sendVerificationSchema = z.object({
   email: z.string().email(),
   userId: z.string().optional(),
-  userName: z.string().optional()
+  userName: z.string().optional(),
 });
 
 const verifyTokenSchema = z.object({
-  token: z.string().min(1)
+  token: z.string().min(1),
 });
 
 // Send verification email endpoint
 export const handleSendVerificationEmail: RequestHandler = async (req, res) => {
   try {
     const validation = sendVerificationSchema.safeParse(req.body);
-    
+
     if (!validation.success) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid request data',
-        errors: validation.error.errors
+        message: "Invalid request data",
+        errors: validation.error.errors,
       });
     }
 
     const { email, userId, userName } = validation.data;
-    
+
     // Create verification token
     const token = createVerificationToken(email, userId);
-    
+
     // Send verification email
     const emailSent = await sendVerificationEmail(email, token, userName);
-    
+
     if (emailSent) {
       res.json({
         success: true,
-        message: 'Verification email sent successfully',
-        email: email
+        message: "Verification email sent successfully",
+        email: email,
       });
     } else {
       res.status(500).json({
         success: false,
-        message: 'Failed to send verification email'
+        message: "Failed to send verification email",
       });
     }
   } catch (error) {
-    console.error('Send verification email error:', error);
+    console.error("Send verification email error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
@@ -168,133 +177,141 @@ export const handleSendVerificationEmail: RequestHandler = async (req, res) => {
 export const handleVerifyEmail: RequestHandler = async (req, res) => {
   try {
     const validation = verifyTokenSchema.safeParse(req.query);
-    
+
     if (!validation.success) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid token format'
+        message: "Invalid token format",
       });
     }
 
     const { token } = validation.data;
-    
+
     cleanupExpiredTokens();
-    
+
     // Find verification token
-    const verificationToken = verificationTokens.find(t => t.token === token);
-    
+    const verificationToken = verificationTokens.find((t) => t.token === token);
+
     if (!verificationToken) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid or expired verification token'
+        message: "Invalid or expired verification token",
       });
     }
-    
+
     if (verificationToken.verified) {
       return res.status(400).json({
         success: false,
-        message: 'Email already verified'
+        message: "Email already verified",
       });
     }
-    
+
     // Mark as verified
     verificationToken.verified = true;
-    
+
     console.log(`Email verified successfully: ${verificationToken.email}`);
-    
+
     res.json({
       success: true,
-      message: 'Email verified successfully',
+      message: "Email verified successfully",
       email: verificationToken.email,
-      verified: true
+      verified: true,
     });
   } catch (error) {
-    console.error('Email verification error:', error);
+    console.error("Email verification error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
 
 // Check verification status
-export const handleCheckVerificationStatus: RequestHandler = async (req, res) => {
+export const handleCheckVerificationStatus: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const { email } = req.query;
-    
-    if (!email || typeof email !== 'string') {
+
+    if (!email || typeof email !== "string") {
       return res.status(400).json({
         success: false,
-        message: 'Email parameter is required'
+        message: "Email parameter is required",
       });
     }
-    
+
     cleanupExpiredTokens();
-    
-    const verificationToken = verificationTokens.find(t => t.email === email);
-    
+
+    const verificationToken = verificationTokens.find((t) => t.email === email);
+
     res.json({
       success: true,
       email: email,
       verified: verificationToken?.verified || false,
       tokenExists: !!verificationToken,
-      expired: verificationToken ? verificationToken.expiresAt < new Date() : false
+      expired: verificationToken
+        ? verificationToken.expiresAt < new Date()
+        : false,
     });
   } catch (error) {
-    console.error('Check verification status error:', error);
+    console.error("Check verification status error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };
 
 // Resend verification email
-export const handleResendVerificationEmail: RequestHandler = async (req, res) => {
+export const handleResendVerificationEmail: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const validation = sendVerificationSchema.safeParse(req.body);
-    
+
     if (!validation.success) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid request data'
+        message: "Invalid request data",
       });
     }
 
     const { email, userId, userName } = validation.data;
-    
+
     // Check if already verified
-    const existingToken = verificationTokens.find(t => t.email === email);
+    const existingToken = verificationTokens.find((t) => t.email === email);
     if (existingToken?.verified) {
       return res.status(400).json({
         success: false,
-        message: 'Email is already verified'
+        message: "Email is already verified",
       });
     }
-    
+
     // Create new verification token
     const token = createVerificationToken(email, userId);
-    
+
     // Send verification email
     const emailSent = await sendVerificationEmail(email, token, userName);
-    
+
     if (emailSent) {
       res.json({
         success: true,
-        message: 'Verification email resent successfully',
-        email: email
+        message: "Verification email resent successfully",
+        email: email,
       });
     } else {
       res.status(500).json({
         success: false,
-        message: 'Failed to resend verification email'
+        message: "Failed to resend verification email",
       });
     }
   } catch (error) {
-    console.error('Resend verification email error:', error);
+    console.error("Resend verification email error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: "Internal server error",
     });
   }
 };

@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link, useLocation, useSearchParams } from "react-router-dom";
+import {
+  useNavigate,
+  Link,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { LoginRequest } from "@shared/api";
@@ -13,7 +18,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isAdminRequired, setIsAdminRequired] = useState(false);
-  
+
   const [formData, setFormData] = useState<LoginRequest>({
     email: "",
     password: "",
@@ -23,14 +28,14 @@ export default function Login() {
 
   // Check if admin access is required and if user is already authenticated
   useEffect(() => {
-    const adminRequired = searchParams.get('admin') === 'required';
-    const verified = searchParams.get('verified') === 'true';
+    const adminRequired = searchParams.get("admin") === "required";
+    const verified = searchParams.get("verified") === "true";
     setIsAdminRequired(adminRequired);
     setShowVerifiedMessage(verified);
 
     // If user is already authenticated, redirect them
     if (isAuthenticated) {
-      const redirectTo = location.state?.from || '/dashboard';
+      const redirectTo = location.state?.from || "/dashboard";
       navigate(redirectTo, { replace: true });
     }
   }, [isAuthenticated, navigate, location.state, searchParams]);
@@ -46,7 +51,7 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.email || !formData.password) {
       setError("Please fill in all fields");
       return;
@@ -57,10 +62,10 @@ export default function Login() {
 
     try {
       const response = await login(formData);
-      
+
       if (response.success) {
         // Redirect to the page they were trying to access, or dashboard
-        const redirectTo = location.state?.from || '/dashboard';
+        const redirectTo = location.state?.from || "/dashboard";
         navigate(redirectTo, { replace: true });
       } else {
         setError(response.message || "Login failed. Please try again.");
@@ -77,7 +82,10 @@ export default function Login() {
       {/* Header */}
       <header className="container mx-auto px-4 md:px-12 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => navigate("/")}
+          >
             <img
               src="/onboard/result.png"
               alt="OnboardTicket Logo"
@@ -86,7 +94,7 @@ export default function Login() {
             />
           </div>
           <div className="hidden md:flex items-center gap-4">
-            <Link 
+            <Link
               to="/register"
               className="px-8 py-2 text-brand-text-primary font-bold text-lg hover:bg-gray-100 rounded-lg transition-colors"
             >
@@ -106,16 +114,16 @@ export default function Login() {
               </h1>
               <p className="text-lg text-[#637996] mb-6">
                 {isAdminRequired
-                  ? 'Admin access required. Please sign in with admin credentials.'
-                  : 'Sign in to your account to manage your bookings'
-                }
+                  ? "Admin access required. Please sign in with admin credentials."
+                  : "Sign in to your account to manage your bookings"}
               </p>
             </div>
 
             {isAdminRequired && (
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-blue-700 text-sm font-medium">
-                  🔒 This page requires administrator privileges. Please sign in with an admin account.
+                  🔒 This page requires administrator privileges. Please sign in
+                  with an admin account.
                 </p>
               </div>
             )}
@@ -123,7 +131,8 @@ export default function Login() {
             {showVerifiedMessage && (
               <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                 <p className="text-green-700 text-sm font-medium">
-                  ✅ Email verified successfully! You can now sign in to your account.
+                  ✅ Email verified successfully! You can now sign in to your
+                  account.
                 </p>
               </div>
             )}
@@ -137,7 +146,10 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Field */}
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-[#637996] mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-semibold text-[#637996] mb-2"
+                >
                   Email Address
                 </label>
                 <div className="relative">
@@ -157,7 +169,10 @@ export default function Login() {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-[#637996] mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-semibold text-[#637996] mb-2"
+                >
                   Password
                 </label>
                 <div className="relative">
@@ -177,7 +192,11 @@ export default function Login() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#637996] hover:text-[#3839C9]"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -198,17 +217,17 @@ export default function Login() {
 
             {/* Forgot Password & Sign Up Links */}
             <div className="mt-8 text-center space-y-4">
-              <Link 
-                to="/forgot-password" 
+              <Link
+                to="/forgot-password"
                 className="text-[#3839C9] hover:text-blue-700 font-medium"
               >
                 Forgot your password?
               </Link>
-              
+
               <div className="text-[#637996]">
                 Don't have an account?{" "}
-                <Link 
-                  to="/register" 
+                <Link
+                  to="/register"
                   className="text-[#3839C9] hover:text-blue-700 font-semibold"
                 >
                   Sign up here
@@ -242,27 +261,62 @@ export default function Login() {
             </div>
             {/* About */}
             <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center">
-              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">About</h4>
+              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">
+                About
+              </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-[#A2A2A2]">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/about")}>Who We are ?</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/privacy-policy")}>Privacy Policy</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/terms-conditions")}>Terms & Conditions</li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/about")}
+                >
+                  Who We are ?
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/privacy-policy")}
+                >
+                  Privacy Policy
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/terms-conditions")}
+                >
+                  Terms & Conditions
+                </li>
               </ul>
             </div>
             {/* Get Help */}
             <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center">
-              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">Get Help</h4>
+              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">
+                Get Help
+              </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-[#A2A2A2]">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/faq")}>FAQs</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/contact")}>Contact Support 24/7</li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/faq")}
+                >
+                  FAQs
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/contact")}
+                >
+                  Contact Support 24/7
+                </li>
               </ul>
             </div>
             {/* Follow Us */}
             <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center">
-              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">Follow US</h4>
+              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">
+                Follow US
+              </h4>
               <div className="space-y-1 md:space-y-2">
-                <h5 className="text-base md:text-lg font-bold text-[#0D69F2]">Stay in touch</h5>
-                <p className="text-xs sm:text-sm font-semibold text-[#A2A2A2]">Blog</p>
+                <h5 className="text-base md:text-lg font-bold text-[#0D69F2]">
+                  Stay in touch
+                </h5>
+                <p className="text-xs sm:text-sm font-semibold text-[#A2A2A2]">
+                  Blog
+                </p>
               </div>
             </div>
           </div>

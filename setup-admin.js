@@ -1,40 +1,40 @@
 /**
  * Admin Setup Script for OnboardTicket
- * 
+ *
  * This script helps you create admin accounts quickly
  * Run with: node setup-admin.js
  */
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = "http://localhost:8080";
 
 // Default admin accounts to create
 const adminAccounts = [
   {
-    email: 'admin@onboardticket.com',
-    password: 'Admin123!',
-    firstName: 'Admin',
-    lastName: 'User',
-    title: 'Mr'
+    email: "admin@onboardticket.com",
+    password: "Admin123!",
+    firstName: "Admin",
+    lastName: "User",
+    title: "Mr",
   },
   {
-    email: 'adebayo@onboardticket.com',
-    password: 'Adebayo123!',
-    firstName: 'Adebayo',
-    lastName: 'Toheeb',
-    title: 'Mr'
-  }
+    email: "adebayo@onboardticket.com",
+    password: "Adebayo123!",
+    firstName: "Adebayo",
+    lastName: "Toheeb",
+    title: "Mr",
+  },
 ];
 
 async function createAdminAccount(adminData) {
   try {
     console.log(`\n🔐 Creating admin account: ${adminData.email}`);
-    
+
     const response = await fetch(`${BASE_URL}/api/auth/register`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(adminData)
+      body: JSON.stringify(adminData),
     });
 
     const result = await response.json();
@@ -44,21 +44,24 @@ async function createAdminAccount(adminData) {
       console.log(`   Email: ${adminData.email}`);
       console.log(`   Password: ${adminData.password}`);
       console.log(`   User ID: ${result.user?.id}`);
-      
+
       // Send verification email
       try {
-        const verificationResponse = await fetch(`${BASE_URL}/api/auth/send-verification`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
+        const verificationResponse = await fetch(
+          `${BASE_URL}/api/auth/send-verification`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: adminData.email,
+              userId: result.user?.id,
+              userName: adminData.firstName,
+            }),
           },
-          body: JSON.stringify({
-            email: adminData.email,
-            userId: result.user?.id,
-            userName: adminData.firstName
-          })
-        });
-        
+        );
+
         const verificationResult = await verificationResponse.json();
         if (verificationResult.success) {
           console.log(`📧 Verification email sent`);
@@ -66,10 +69,10 @@ async function createAdminAccount(adminData) {
       } catch (error) {
         console.log(`⚠️  Verification email failed (account still created)`);
       }
-      
+
       return true;
     } else {
-      if (result.message && result.message.includes('already exists')) {
+      if (result.message && result.message.includes("already exists")) {
         console.log(`ℹ️  Admin account already exists: ${adminData.email}`);
         return true;
       } else {
@@ -86,29 +89,29 @@ async function createAdminAccount(adminData) {
 async function testAdminLogin(email, password) {
   try {
     console.log(`\n🧪 Testing admin login: ${email}`);
-    
+
     const response = await fetch(`${BASE_URL}/api/auth/login`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
     });
 
     const result = await response.json();
 
     if (result.success && result.token) {
       console.log(`✅ Admin login successful!`);
-      
+
       // Test admin dashboard access
       const dashboardResponse = await fetch(`${BASE_URL}/api/admin/stats`, {
         headers: {
-          'Authorization': `Bearer ${result.token}`
-        }
+          Authorization: `Bearer ${result.token}`,
+        },
       });
-      
+
       const dashboardResult = await dashboardResponse.json();
-      
+
       if (dashboardResponse.ok) {
         console.log(`✅ Admin dashboard access confirmed`);
         console.log(`   Total bookings: ${dashboardResult.totalBookings || 0}`);
@@ -116,7 +119,7 @@ async function testAdminLogin(email, password) {
       } else {
         console.log(`❌ Admin dashboard access failed`);
       }
-      
+
       return true;
     } else {
       console.log(`❌ Admin login failed: ${result.message}`);
@@ -129,52 +132,54 @@ async function testAdminLogin(email, password) {
 }
 
 async function setupAdminAccounts() {
-  console.log('🚀 OnboardTicket Admin Setup');
-  console.log('==============================\n');
-  
+  console.log("🚀 OnboardTicket Admin Setup");
+  console.log("==============================\n");
+
   // Check if server is running
   try {
     const healthResponse = await fetch(`${BASE_URL}/api/ping`);
     if (!healthResponse.ok) {
-      throw new Error('Server not responding');
+      throw new Error("Server not responding");
     }
-    console.log('✅ Server is running\n');
+    console.log("✅ Server is running\n");
   } catch (error) {
-    console.log('❌ Server is not running. Please start the dev server first:');
-    console.log('   npm run dev\n');
+    console.log("❌ Server is not running. Please start the dev server first:");
+    console.log("   npm run dev\n");
     return;
   }
 
   let successCount = 0;
-  
+
   for (const admin of adminAccounts) {
     const success = await createAdminAccount(admin);
     if (success) {
       successCount++;
-      
+
       // Test the login
       await testAdminLogin(admin.email, admin.password);
     }
   }
 
-  console.log('\n📊 Setup Summary:');
-  console.log(`   ${successCount}/${adminAccounts.length} admin accounts ready`);
-  
+  console.log("\n📊 Setup Summary:");
+  console.log(
+    `   ${successCount}/${adminAccounts.length} admin accounts ready`,
+  );
+
   if (successCount > 0) {
-    console.log('\n🎉 Admin setup complete!');
-    console.log('\nAdmin Credentials:');
-    adminAccounts.forEach(admin => {
+    console.log("\n🎉 Admin setup complete!");
+    console.log("\nAdmin Credentials:");
+    adminAccounts.forEach((admin) => {
       console.log(`   Email: ${admin.email}`);
       console.log(`   Password: ${admin.password}`);
-      console.log('');
+      console.log("");
     });
-    
-    console.log('🌐 Access URLs:');
+
+    console.log("🌐 Access URLs:");
     console.log(`   Admin Dashboard: ${BASE_URL}/admin`);
     console.log(`   Login Page: ${BASE_URL}/login`);
     console.log(`   Registration: ${BASE_URL}/register`);
   } else {
-    console.log('\n❌ No admin accounts were created successfully');
+    console.log("\n❌ No admin accounts were created successfully");
   }
 }
 
@@ -185,15 +190,15 @@ async function createCustomAdmin(email, password, firstName, lastName) {
     password,
     firstName,
     lastName,
-    title: 'Mr'
+    title: "Mr",
   };
-  
-  console.log('\n🔧 Creating custom admin account...');
+
+  console.log("\n🔧 Creating custom admin account...");
   const success = await createAdminAccount(customAdmin);
-  
+
   if (success) {
     await testAdminLogin(email, password);
-    console.log('\n✅ Custom admin account ready!');
+    console.log("\n✅ Custom admin account ready!");
     console.log(`   Email: ${email}`);
     console.log(`   Password: ${password}`);
   }
@@ -202,11 +207,13 @@ async function createCustomAdmin(email, password, firstName, lastName) {
 // Main execution
 if (require.main === module) {
   const args = process.argv.slice(2);
-  
+
   if (args.length === 4) {
     // Custom admin: node setup-admin.js email password firstName lastName
     const [email, password, firstName, lastName] = args;
-    createCustomAdmin(email, password, firstName, lastName).catch(console.error);
+    createCustomAdmin(email, password, firstName, lastName).catch(
+      console.error,
+    );
   } else {
     // Default setup
     setupAdminAccounts().catch(console.error);
