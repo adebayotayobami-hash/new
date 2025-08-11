@@ -1,20 +1,35 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { LoginRequest } from "@shared/api";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const { login, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isAdminRequired, setIsAdminRequired] = useState(false);
   
   const [formData, setFormData] = useState<LoginRequest>({
     email: "",
     password: "",
   });
+
+  // Check if admin access is required and if user is already authenticated
+  useEffect(() => {
+    const adminRequired = searchParams.get('admin') === 'required';
+    setIsAdminRequired(adminRequired);
+
+    // If user is already authenticated, redirect them
+    if (isAuthenticated) {
+      const redirectTo = location.state?.from || '/dashboard';
+      navigate(redirectTo, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location.state, searchParams]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -40,7 +55,9 @@ export default function Login() {
       const response = await login(formData);
       
       if (response.success) {
-        navigate("/dashboard");
+        // Redirect to the page they were trying to access, or dashboard
+        const redirectTo = location.state?.from || '/dashboard';
+        navigate(redirectTo, { replace: true });
       } else {
         setError(response.message || "Login failed. Please try again.");
       }
