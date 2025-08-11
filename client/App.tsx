@@ -24,6 +24,7 @@ const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
 const TermsConditions = React.lazy(() => import("./pages/TermsConditions"));
 const Login = React.lazy(() => import("./pages/Login"));
 const Register = React.lazy(() => import("./pages/Register"));
+const VerifyEmail = React.lazy(() => import("./pages/VerifyEmail"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const BookingHistory = React.lazy(() => import("./pages/BookingHistory"));
 const SupportTickets = React.lazy(() => import("./pages/SupportTickets"));
@@ -52,6 +53,7 @@ const App = () => (
                 <Route path="/userform/thankyou" element={<UserFormPage step="thankyou" />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/dashboard" element={
                   <AuthProtectedRoute>
                     <Dashboard />
