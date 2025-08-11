@@ -247,6 +247,8 @@ export default function Payment() {
         passengers: passengerData.passengers,
         contactEmail: passengerData.contactEmail || user?.email || "",
         termsAccepted: true,
+        selectedFlight: selectedFlight,
+        totalAmount: calculateTotal()
       };
 
       console.log('Creating booking for Stripe payment:', bookingRequest);
@@ -343,6 +345,8 @@ export default function Payment() {
         passengers: passengerData.passengers,
         contactEmail: passengerData.contactEmail || user?.email || "",
         termsAccepted: true,
+        selectedFlight: selectedFlight,
+        totalAmount: calculateTotal()
       };
 
       console.log('Sending booking request to /api/bookings...');
@@ -478,6 +482,8 @@ export default function Payment() {
         passengers: passengerData.passengers,
         contactEmail: passengerData.contactEmail || user?.email || "",
         termsAccepted: true,
+        selectedFlight: selectedFlight,
+        totalAmount: calculateTotal()
       };
 
       const bookingResponse = await authenticatedFetch('/api/bookings', {
