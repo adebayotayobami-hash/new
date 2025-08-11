@@ -33,7 +33,9 @@ const bookingSchema = z.object({
     email: z.string().email()
   })).min(1),
   contactEmail: z.string().email(),
-  termsAccepted: z.boolean()
+  termsAccepted: z.boolean(),
+  selectedFlight: z.any().optional(),
+  totalAmount: z.number().optional()
 });
 
 // Generate PNR (Passenger Name Record)
@@ -46,9 +48,21 @@ const generatePNR = (): string => {
   return result;
 };
 
-// Calculate booking amount
-const calculateBookingAmount = (passengers: any[]): number => {
-  return passengers.length * 15; // $15 per passenger
+// Calculate booking amount based on selected flight or fallback
+const calculateBookingAmount = (passengers: any[], selectedFlight?: any, providedAmount?: number): number => {
+  // Use provided total amount if available
+  if (providedAmount && providedAmount > 0) {
+    return providedAmount;
+  }
+
+  // Use selected flight pricing if available
+  if (selectedFlight && selectedFlight.price && selectedFlight.price.total) {
+    const flightPrice = parseFloat(selectedFlight.price.total);
+    return flightPrice * passengers.length;
+  }
+
+  // Fallback to $15 per passenger
+  return passengers.length * 15;
 };
 
 // Create new booking
@@ -88,6 +102,19 @@ export const handleCreateBooking: RequestHandler = async (req, res) => {
       return res.status(400).json(response);
     }
 
+    // Calculate amounts
+    const totalAmount = calculateBookingAmount(
+      bookingData.passengers,
+      bookingData.selectedFlight,
+      bookingData.totalAmount
+    );
+
+    const basePrice = bookingData.selectedFlight?.price
+      ? parseFloat(bookingData.selectedFlight.price.total)
+      : 15;
+
+    const currency = bookingData.selectedFlight?.price?.currency || "USD";
+
     // Create booking
     const booking: Booking = {
       id: `booking_${bookingIdCounter}`,
@@ -96,10 +123,12 @@ export const handleCreateBooking: RequestHandler = async (req, res) => {
       status: "pending",
       route: bookingData.route,
       passengers: bookingData.passengers,
-      totalAmount: calculateBookingAmount(bookingData.passengers),
-      currency: "USD",
+      totalAmount: totalAmount,
+      currency: currency,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      selectedFlight: bookingData.selectedFlight || null,
+      basePrice: basePrice
     };
 
     addBooking(booking);
