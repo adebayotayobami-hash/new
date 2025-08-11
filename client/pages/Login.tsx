@@ -19,10 +19,14 @@ export default function Login() {
     password: "",
   });
 
+  const [showVerifiedMessage, setShowVerifiedMessage] = useState(false);
+
   // Check if admin access is required and if user is already authenticated
   useEffect(() => {
     const adminRequired = searchParams.get('admin') === 'required';
+    const verified = searchParams.get('verified') === 'true';
     setIsAdminRequired(adminRequired);
+    setShowVerifiedMessage(verified);
 
     // If user is already authenticated, redirect them
     if (isAuthenticated) {
@@ -112,6 +116,14 @@ export default function Login() {
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-blue-700 text-sm font-medium">
                   🔒 This page requires administrator privileges. Please sign in with an admin account.
+                </p>
+              </div>
+            )}
+
+            {showVerifiedMessage && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-green-700 text-sm font-medium">
+                  ✅ Email verified successfully! You can now sign in to your account.
                 </p>
               </div>
             )}
