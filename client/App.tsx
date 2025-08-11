@@ -1,6 +1,5 @@
 import "./global.css";
 
-
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -10,6 +9,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React, { Suspense } from "react";
 import { AuthProvider } from "./hooks/useAuth";
 import { NotificationProvider } from "./hooks/useNotifications";
+import {
+  AuthProtectedRoute,
+  AdminProtectedRoute,
+} from "./components/ProtectedRoute";
 
 // Lazy load large/rarely used pages for faster initial load
 const Index = React.lazy(() => import("./pages/Index"));
@@ -23,6 +26,7 @@ const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
 const TermsConditions = React.lazy(() => import("./pages/TermsConditions"));
 const Login = React.lazy(() => import("./pages/Login"));
 const Register = React.lazy(() => import("./pages/Register"));
+const VerifyEmail = React.lazy(() => import("./pages/VerifyEmail"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const BookingHistory = React.lazy(() => import("./pages/BookingHistory"));
 const SupportTickets = React.lazy(() => import("./pages/SupportTickets"));
@@ -40,21 +44,71 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Suspense fallback={<div className="w-full h-screen flex items-center justify-center text-lg">Loading...</div>}>
+            <Suspense
+              fallback={
+                <div className="w-full h-screen flex items-center justify-center text-lg">
+                  Loading...
+                </div>
+              }
+            >
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/userform" element={<UserFormPage />} />
-                <Route path="/userform/route" element={<UserFormPage step="route" />} />
-                <Route path="/userform/passengers" element={<UserFormPage step="passengers" />} />
-                <Route path="/userform/confirmation" element={<UserFormPage step="confirmation" />} />
-                <Route path="/userform/search" element={<UserFormPage step="search" />} />
-                <Route path="/userform/thankyou" element={<UserFormPage step="thankyou" />} />
+                <Route
+                  path="/userform/route"
+                  element={<UserFormPage step="route" />}
+                />
+                <Route
+                  path="/userform/passengers"
+                  element={<UserFormPage step="passengers" />}
+                />
+                <Route
+                  path="/userform/confirmation"
+                  element={<UserFormPage step="confirmation" />}
+                />
+                <Route
+                  path="/userform/search"
+                  element={<UserFormPage step="search" />}
+                />
+                <Route
+                  path="/userform/thankyou"
+                  element={<UserFormPage step="thankyou" />}
+                />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/booking-history" element={<BookingHistory />} />
-                <Route path="/support-tickets" element={<SupportTickets />} />
-                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <AuthProtectedRoute>
+                      <Dashboard />
+                    </AuthProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/booking-history"
+                  element={
+                    <AuthProtectedRoute>
+                      <BookingHistory />
+                    </AuthProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/support-tickets"
+                  element={
+                    <AuthProtectedRoute>
+                      <SupportTickets />
+                    </AuthProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminDashboard />
+                    </AdminProtectedRoute>
+                  }
+                />
                 <Route path="/payment/success" element={<PaymentSuccess />} />
                 <Route path="/payment/cancel" element={<PaymentCancel />} />
                 <Route path="/about" element={<About />} />

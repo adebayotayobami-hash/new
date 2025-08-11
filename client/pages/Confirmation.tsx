@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, Mail, Check, Plane, MapPin, Calendar, Users, AlertCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Mail,
+  Check,
+  Plane,
+  MapPin,
+  Calendar,
+  Users,
+  AlertCircle,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { FlightRoute, Passenger, BookingRequest } from "@shared/api";
@@ -15,9 +24,15 @@ interface BookingData {
   route: FlightRoute | null;
   passengers: Passenger[];
   contactEmail: string;
+  selectedFlight: any | null;
 }
 
-export default function Confirmation({ onNext, onBack, currentStep, onNavigate }: ConfirmationProps) {
+export default function Confirmation({
+  onNext,
+  onBack,
+  currentStep,
+  onNavigate,
+}: ConfirmationProps) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -26,7 +41,8 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
   const [bookingData, setBookingData] = useState<BookingData>({
     route: null,
     passengers: [],
-    contactEmail: ""
+    contactEmail: "",
+    selectedFlight: null,
   });
 
   // Load saved booking data
@@ -34,16 +50,25 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
     const loadBookingData = () => {
       try {
         // Load route data
-        const savedRoute = localStorage.getItem('selectedRoute') || localStorage.getItem('bookingRoute');
+        const savedRoute =
+          localStorage.getItem("selectedRoute") ||
+          localStorage.getItem("bookingRoute");
         let route = null;
         if (savedRoute) {
           route = JSON.parse(savedRoute);
         }
 
         // Load passenger data
-        const savedPassengers = localStorage.getItem('bookingPassengers');
-        const savedContactEmail = localStorage.getItem('bookingContactEmail');
-        
+        const savedPassengers = localStorage.getItem("bookingPassengers");
+        const savedContactEmail = localStorage.getItem("bookingContactEmail");
+
+        // Load selected flight data
+        const savedFlight = localStorage.getItem("selectedFlight");
+        let selectedFlight = null;
+        if (savedFlight) {
+          selectedFlight = JSON.parse(savedFlight);
+        }
+
         let passengers: Passenger[] = [];
         let contactEmail = "";
 
@@ -58,36 +83,57 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
         setBookingData({
           route,
           passengers,
-          contactEmail
+          contactEmail,
+          selectedFlight,
         });
 
-        console.log('Loaded booking data:', { route, passengers, contactEmail });
+        console.log("Loaded booking data:", {
+          route,
+          passengers,
+          contactEmail,
+          selectedFlight,
+        });
       } catch (error) {
-        console.error('Error loading booking data:', error);
-        setError('Error loading booking data. Please go back and try again.');
+        console.error("Error loading booking data:", error);
+        setError("Error loading booking data. Please go back and try again.");
       }
     };
 
     loadBookingData();
   }, []);
 
-  // Calculate total amount ($15 per passenger)
-  const totalAmount = bookingData.passengers.length * 15;
+  // Calculate total amount based on selected flight or fallback to $15
+  const calculateTotalAmount = () => {
+    if (bookingData.selectedFlight && bookingData.selectedFlight.price) {
+      const flightPrice = parseFloat(bookingData.selectedFlight.price.total);
+      return flightPrice * bookingData.passengers.length;
+    }
+    // Fallback to $15 per passenger if no flight selected
+    return bookingData.passengers.length * 15;
+  };
+
+  const totalAmount = calculateTotalAmount();
+  const basePrice =
+    bookingData.selectedFlight && bookingData.selectedFlight.price
+      ? parseFloat(bookingData.selectedFlight.price.total)
+      : 15;
 
   // Handle booking creation
   const handleCreateBooking = async () => {
     if (!acceptTerms) {
-      setError('Please accept the terms and conditions to continue.');
+      setError("Please accept the terms and conditions to continue.");
       return;
     }
 
     if (!bookingData.route || bookingData.passengers.length === 0) {
-      setError('Missing booking information. Please go back and complete all steps.');
+      setError(
+        "Missing booking information. Please go back and complete all steps.",
+      );
       return;
     }
 
     if (!isAuthenticated) {
-      setError('Please log in to create a booking.');
+      setError("Please log in to create a booking.");
       return;
     }
 
@@ -99,37 +145,41 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
         route: bookingData.route,
         passengers: bookingData.passengers,
         contactEmail: bookingData.contactEmail,
-        termsAccepted: acceptTerms
+        termsAccepted: acceptTerms,
+        selectedFlight: bookingData.selectedFlight || null,
+        totalAmount: totalAmount,
       };
 
-      console.log('Creating booking:', bookingRequest);
+      console.log("Creating booking:", bookingRequest);
 
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
+      const response = await fetch("/api/bookings", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
-        body: JSON.stringify(bookingRequest)
+        body: JSON.stringify(bookingRequest),
       });
 
       const result = await response.json();
 
       if (result.success && result.booking) {
         // Save booking ID for payment
-        localStorage.setItem('currentBookingId', result.booking.id);
-        localStorage.setItem('currentBooking', JSON.stringify(result.booking));
-        
-        console.log('Booking created successfully:', result.booking);
-        
+        localStorage.setItem("currentBookingId", result.booking.id);
+        localStorage.setItem("currentBooking", JSON.stringify(result.booking));
+
+        console.log("Booking created successfully:", result.booking);
+
         // Navigate to payment
-        navigate('/payment');
+        navigate("/payment");
       } else {
-        setError(result.message || 'Failed to create booking. Please try again.');
+        setError(
+          result.message || "Failed to create booking. Please try again.",
+        );
       }
     } catch (error) {
-      console.error('Error creating booking:', error);
-      setError('Network error. Please check your connection and try again.');
+      console.error("Error creating booking:", error);
+      setError("Network error. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -139,10 +189,13 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
     <div className="min-h-screen bg-ticket-primary text-white">
       {/* Header */}
       <header className="container mx-auto px-4 lg:px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
-          <img 
-            src="/onboard/result.png" 
-            alt="OnboardTicket Logo" 
+        <div
+          className="flex items-center cursor-pointer"
+          onClick={() => navigate("/")}
+        >
+          <img
+            src="/onboard/result.png"
+            alt="OnboardTicket Logo"
             className="h-[40px] sm:h-[59px] w-auto max-w-[200px] sm:max-w-[294px] cursor-pointer"
             loading="eager"
             onClick={() => navigate("/")}
@@ -196,41 +249,57 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
             {/* Route Information */}
             {bookingData.route && (
               <div>
-                <h2 className="text-2xl font-bold mb-6 text-[#F6F6FF]">Flight Route</h2>
-                
+                <h2 className="text-2xl font-bold mb-6 text-[#F6F6FF]">
+                  Flight Route
+                </h2>
+
                 <div className="bg-ticket-secondary rounded-lg p-6 space-y-4">
                   <div className="flex items-center gap-4">
                     <MapPin className="w-5 h-5 text-white/60" />
                     <div className="flex-1">
                       <div className="text-lg font-semibold">
-                        {bookingData.route.from.city} ({bookingData.route.from.code}) → {bookingData.route.to.city} ({bookingData.route.to.code})
+                        {bookingData.route.from.city} (
+                        {bookingData.route.from.code}) →{" "}
+                        {bookingData.route.to.city} ({bookingData.route.to.code}
+                        )
                       </div>
                       <div className="text-sm text-white/70">
-                        {bookingData.route.from.name} → {bookingData.route.to.name}
+                        {bookingData.route.from.name} →{" "}
+                        {bookingData.route.to.name}
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
                     <Calendar className="w-5 h-5 text-white/60" />
                     <div>
                       <div className="text-sm text-white/70">Departure</div>
-                      <div className="font-semibold">{new Date(bookingData.route.departureDate).toLocaleDateString()}</div>
+                      <div className="font-semibold">
+                        {new Date(
+                          bookingData.route.departureDate,
+                        ).toLocaleDateString()}
+                      </div>
                     </div>
                     {bookingData.route.returnDate && (
                       <>
                         <div className="text-white/40 mx-4">•</div>
                         <div>
                           <div className="text-sm text-white/70">Return</div>
-                          <div className="font-semibold">{new Date(bookingData.route.returnDate).toLocaleDateString()}</div>
+                          <div className="font-semibold">
+                            {new Date(
+                              bookingData.route.returnDate,
+                            ).toLocaleDateString()}
+                          </div>
                         </div>
                       </>
                     )}
                   </div>
-                  
+
                   <div className="pt-2 border-t border-white/20">
                     <span className="text-sm text-white/70">Trip Type: </span>
-                    <span className="font-semibold capitalize">{bookingData.route.tripType}</span>
+                    <span className="font-semibold capitalize">
+                      {bookingData.route.tripType}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -238,31 +307,45 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
 
             {/* Passenger Information */}
             <div>
-              <h2 className="text-2xl font-bold mb-6 text-[#F6F6FF]">Passengers</h2>
-              
+              <h2 className="text-2xl font-bold mb-6 text-[#F6F6FF]">
+                Passengers
+              </h2>
+
               <div className="bg-ticket-secondary rounded-lg p-6 space-y-4">
                 <div className="flex items-center gap-3 mb-4">
                   <Users className="w-5 h-5 text-white/60" />
-                  <span className="text-lg font-semibold">{bookingData.passengers.length} Passenger{bookingData.passengers.length > 1 ? 's' : ''}</span>
+                  <span className="text-lg font-semibold">
+                    {bookingData.passengers.length} Passenger
+                    {bookingData.passengers.length > 1 ? "s" : ""}
+                  </span>
                 </div>
-                
+
                 {bookingData.passengers.map((passenger, index) => (
                   <div key={index} className="bg-[#606AFB]/30 rounded-lg p-4">
-                    <div className="text-sm text-white/70 mb-2">Passenger {index + 1}</div>
-                    <div className="font-semibold">
-                      {passenger.title} {passenger.firstName} {passenger.lastName}
+                    <div className="text-sm text-white/70 mb-2">
+                      Passenger {index + 1}
                     </div>
-                    <div className="text-sm text-white/70">{passenger.email}</div>
+                    <div className="font-semibold">
+                      {passenger.title} {passenger.firstName}{" "}
+                      {passenger.lastName}
+                    </div>
+                    <div className="text-sm text-white/70">
+                      {passenger.email}
+                    </div>
                   </div>
                 ))}
-                
+
                 {bookingData.contactEmail && (
                   <div className="pt-4 border-t border-white/20">
                     <div className="flex items-center gap-3">
                       <Mail className="w-5 h-5 text-white/60" />
                       <div>
-                        <div className="text-sm text-white/70">Contact Email</div>
-                        <div className="font-semibold">{bookingData.contactEmail}</div>
+                        <div className="text-sm text-white/70">
+                          Contact Email
+                        </div>
+                        <div className="font-semibold">
+                          {bookingData.contactEmail}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -275,21 +358,45 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
           <div className="space-y-8">
             {/* Pricing Summary */}
             <div className="bg-ticket-secondary rounded-lg p-6">
-              <h3 className="text-xl font-bold mb-4 text-[#F6F6FF]">Booking Summary</h3>
-              
+              <h3 className="text-xl font-bold mb-4 text-[#F6F6FF]">
+                Booking Summary
+              </h3>
+
               <div className="space-y-3">
+                {bookingData.selectedFlight && (
+                  <div className="mb-4 p-3 bg-ticket-accent/20 rounded-lg">
+                    <div className="text-sm text-white/90 mb-2">
+                      Selected Flight
+                    </div>
+                    <div className="text-xs text-white/70">
+                      {bookingData.selectedFlight.validatingAirlineCodes?.[0]}{" "}
+                      Flight
+                      {bookingData.selectedFlight.price?.currency}{" "}
+                      {parseInt(
+                        bookingData.selectedFlight.price?.total || "0",
+                      ).toLocaleString()}
+                    </div>
+                  </div>
+                )}
                 <div className="flex justify-between">
-                  <span className="text-white/70">Base price per passenger</span>
-                  <span className="font-semibold">$15.00</span>
+                  <span className="text-white/70">
+                    Base price per passenger
+                  </span>
+                  <span className="font-semibold">${basePrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white/70">Number of passengers</span>
-                  <span className="font-semibold">{bookingData.passengers.length}</span>
+                  <span className="font-semibold">
+                    {bookingData.passengers.length}
+                  </span>
                 </div>
                 <div className="pt-3 border-t border-white/20">
                   <div className="flex justify-between text-lg">
                     <span className="font-bold">Total Amount</span>
-                    <span className="font-bold text-ticket-accent">${totalAmount}.00</span>
+                    <span className="font-bold text-ticket-accent">
+                      {bookingData.selectedFlight?.price?.currency || "$"}
+                      {totalAmount.toFixed(2)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -297,8 +404,10 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
 
             {/* Terms and Conditions */}
             <div className="bg-ticket-secondary rounded-lg p-6">
-              <h3 className="text-xl font-bold mb-4 text-[#F6F6FF]">Terms & Conditions</h3>
-              
+              <h3 className="text-xl font-bold mb-4 text-[#F6F6FF]">
+                Terms & Conditions
+              </h3>
+
               <div className="space-y-4">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <div className="mt-1">
@@ -310,21 +419,22 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
                     />
                   </div>
                   <div className="text-sm text-white/90">
-                    I accept the{' '}
+                    I accept the{" "}
                     <button
-                      onClick={() => navigate('/terms-conditions')}
+                      onClick={() => navigate("/terms-conditions")}
                       className="text-ticket-accent hover:underline"
                     >
                       Terms & Conditions
-                    </button>{' '}
-                    and{' '}
+                    </button>{" "}
+                    and{" "}
                     <button
-                      onClick={() => navigate('/privacy-policy')}
+                      onClick={() => navigate("/privacy-policy")}
                       className="text-ticket-accent hover:underline"
                     >
                       Privacy Policy
                     </button>
-                    . I understand this is a flight reservation for visa purposes.
+                    . I understand this is a flight reservation for visa
+                    purposes.
                   </div>
                 </label>
               </div>
@@ -334,7 +444,12 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
             <div className="space-y-4">
               <button
                 onClick={handleCreateBooking}
-                disabled={!acceptTerms || loading || !bookingData.route || bookingData.passengers.length === 0}
+                disabled={
+                  !acceptTerms ||
+                  loading ||
+                  !bookingData.route ||
+                  bookingData.passengers.length === 0
+                }
                 className="w-full bg-ticket-accent hover:bg-ticket-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-3"
               >
                 {loading ? (
@@ -349,7 +464,7 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
                   </>
                 )}
               </button>
-              
+
               <button
                 onClick={onBack}
                 disabled={loading}

@@ -75,6 +75,8 @@ export interface BookingRequest {
   passengers: Passenger[];
   contactEmail: string;
   termsAccepted: boolean;
+  selectedFlight?: FlightOffer | null;
+  totalAmount?: number;
 }
 
 export interface Booking {
@@ -89,6 +91,8 @@ export interface Booking {
   createdAt: string;
   updatedAt: string;
   ticketUrl?: string;
+  selectedFlight?: FlightOffer | null;
+  basePrice?: number;
 }
 
 export interface BookingResponse {

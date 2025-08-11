@@ -1,5 +1,12 @@
-import { useState, useEffect } from 'react';
-import { ArrowLeft, CreditCard, AlertCircle, Shield, Lock, Zap } from 'lucide-react';
+import { useState, useEffect } from "react";
+import {
+  ArrowLeft,
+  CreditCard,
+  AlertCircle,
+  Shield,
+  Lock,
+  Zap,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useFormValidation } from "../hooks/useFormValidation";
 import { PaymentRequest, PaymentResponse } from "@shared/api";
@@ -11,13 +18,14 @@ export default function Payment() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const authenticatedFetch = useAuthenticatedFetch();
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('stripe');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("stripe");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [bookingData, setBookingData] = useState<any>(null);
   const [passengerData, setPassengerData] = useState<any>(null);
   const [routeData, setRouteData] = useState<any>(null);
+  const [selectedFlight, setSelectedFlight] = useState<any>(null);
   const [paypalLoading, setPaypalLoading] = useState(false);
 
   const [paymentDetails, setPaymentDetails] = useState({
@@ -30,35 +38,43 @@ export default function Payment() {
 
   // Validation rules for payment form
   const validationRules = {
-    country: [
-      { required: true, message: 'Country is required' }
-    ],
+    country: [{ required: true, message: "Country is required" }],
     cardholderName: [
-      { required: true, message: 'Cardholder name is required' },
-      { minLength: 2, message: 'Name must be at least 2 characters' },
-      { pattern: /^[a-zA-Z\s-']+$/, message: 'Name can only contain letters, spaces, hyphens, and apostrophes' }
+      { required: true, message: "Cardholder name is required" },
+      { minLength: 2, message: "Name must be at least 2 characters" },
+      {
+        pattern: /^[a-zA-Z\s-']+$/,
+        message:
+          "Name can only contain letters, spaces, hyphens, and apostrophes",
+      },
     ],
     cardNumber: [
-      { required: true, message: 'Card number is required' },
-      { pattern: /^\d{4}\s?\d{4}\s?\d{4}\s?\d{4}$/, message: 'Please enter a valid 16-digit card number' }
+      { required: true, message: "Card number is required" },
+      {
+        pattern: /^\d{4}\s?\d{4}\s?\d{4}\s?\d{4}$/,
+        message: "Please enter a valid 16-digit card number",
+      },
     ],
     expiryDate: [
-      { required: true, message: 'Expiry date is required' },
-      { pattern: /^(0[1-9]|1[0-2])\/\d{2}$/, message: 'Please enter date in MM/YY format' },
+      { required: true, message: "Expiry date is required" },
+      {
+        pattern: /^(0[1-9]|1[0-2])\/\d{2}$/,
+        message: "Please enter date in MM/YY format",
+      },
       {
         custom: (value: string) => {
           if (!value) return false;
-          const [month, year] = value.split('/');
+          const [month, year] = value.split("/");
           const expiry = new Date(2000 + parseInt(year), parseInt(month) - 1);
           return expiry > new Date();
         },
-        message: 'Card has expired'
-      }
+        message: "Card has expired",
+      },
     ],
     cvv: [
-      { required: true, message: 'CVV is required' },
-      { pattern: /^\d{3,4}$/, message: 'CVV must be 3 or 4 digits' }
-    ]
+      { required: true, message: "CVV is required" },
+      { pattern: /^\d{3,4}$/, message: "CVV must be 3 or 4 digits" },
+    ],
   };
 
   const {
@@ -74,22 +90,26 @@ export default function Payment() {
   // Load booking data from previous steps
   useEffect(() => {
     // Load booking data (most important)
-    const savedBooking = localStorage.getItem('currentBooking');
-    const savedRoute = localStorage.getItem('selectedRoute') || localStorage.getItem('bookingRoute');
-    const savedPassengers = localStorage.getItem('passengerData') || localStorage.getItem('bookingPassengers');
+    const savedBooking = localStorage.getItem("currentBooking");
+    const savedRoute =
+      localStorage.getItem("selectedRoute") ||
+      localStorage.getItem("bookingRoute");
+    const savedPassengers =
+      localStorage.getItem("passengerData") ||
+      localStorage.getItem("bookingPassengers");
 
     if (savedBooking) {
       try {
         const booking = JSON.parse(savedBooking);
         setBookingData(booking);
-        console.log('Loaded booking data for payment:', booking);
+        console.log("Loaded booking data for payment:", booking);
       } catch (error) {
-        console.error('Error parsing booking data:', error);
+        console.error("Error parsing booking data:", error);
       }
     } else {
       // If no booking data, redirect back to booking flow
-      console.warn('No booking data found, redirecting to booking flow');
-      navigate('/userform/confirmation');
+      console.warn("No booking data found, redirecting to booking flow");
+      navigate("/userform/confirmation");
       return;
     }
 
@@ -97,7 +117,7 @@ export default function Payment() {
       try {
         setRouteData(JSON.parse(savedRoute));
       } catch (error) {
-        console.error('Error parsing route data:', error);
+        console.error("Error parsing route data:", error);
       }
     }
 
@@ -105,21 +125,33 @@ export default function Payment() {
       try {
         setPassengerData(JSON.parse(savedPassengers));
       } catch (error) {
-        console.error('Error parsing passenger data:', error);
+        console.error("Error parsing passenger data:", error);
+      }
+    }
+
+    // Load selected flight data
+    const savedFlight = localStorage.getItem("selectedFlight");
+    if (savedFlight) {
+      try {
+        const flight = JSON.parse(savedFlight);
+        setSelectedFlight(flight);
+        console.log("Loaded selected flight for payment:", flight);
+      } catch (error) {
+        console.error("Error parsing selected flight data:", error);
       }
     }
 
     // If user is logged in, pre-fill cardholder name
     if (user) {
-      setPaymentDetails(prev => ({
+      setPaymentDetails((prev) => ({
         ...prev,
-        cardholderName: `${user.firstName} ${user.lastName}`
+        cardholderName: `${user.firstName} ${user.lastName}`,
       }));
     }
 
     // Check authentication
     if (!user) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
   }, [user, navigate]);
@@ -128,29 +160,33 @@ export default function Payment() {
     let formattedValue = value;
 
     // Format card number with spaces
-    if (field === 'cardNumber') {
-      formattedValue = value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+    if (field === "cardNumber") {
+      formattedValue = value
+        .replace(/\s/g, "")
+        .replace(/(.{4})/g, "$1 ")
+        .trim();
       if (formattedValue.length > 19) return; // Max length for formatted card number
     }
 
     // Format expiry date
-    if (field === 'expiryDate') {
-      formattedValue = value.replace(/\D/g, '');
+    if (field === "expiryDate") {
+      formattedValue = value.replace(/\D/g, "");
       if (formattedValue.length >= 2) {
-        formattedValue = formattedValue.substring(0, 2) + '/' + formattedValue.substring(2, 4);
+        formattedValue =
+          formattedValue.substring(0, 2) + "/" + formattedValue.substring(2, 4);
       }
       if (formattedValue.length > 5) return;
     }
 
     // Format CVV (only numbers)
-    if (field === 'cvv') {
-      formattedValue = value.replace(/\D/g, '');
+    if (field === "cvv") {
+      formattedValue = value.replace(/\D/g, "");
       if (formattedValue.length > 4) return;
     }
 
-    setPaymentDetails(prev => ({
+    setPaymentDetails((prev) => ({
       ...prev,
-      [field]: formattedValue
+      [field]: formattedValue,
     }));
 
     clearFieldError(field);
@@ -164,7 +200,29 @@ export default function Payment() {
 
   const calculateTotal = () => {
     const passengerCount = passengerData?.passengers?.length || 1;
-    return passengerCount * 10; // $10 per passenger
+
+    // Use selected flight pricing if available
+    if (selectedFlight && selectedFlight.price) {
+      const flightPrice = parseFloat(selectedFlight.price.total);
+      return flightPrice * passengerCount;
+    }
+
+    // Fallback to $10 per passenger
+    return passengerCount * 10;
+  };
+
+  const getBasePrice = () => {
+    if (selectedFlight && selectedFlight.price) {
+      return parseFloat(selectedFlight.price.total);
+    }
+    return 10; // Fallback price
+  };
+
+  const getCurrency = () => {
+    if (selectedFlight && selectedFlight.price) {
+      return selectedFlight.price.currency;
+    }
+    return "USD"; // Fallback currency
   };
 
   const createBookingForStripe = async () => {
@@ -176,34 +234,40 @@ export default function Payment() {
     try {
       // Validate required data first
       if (!routeData) {
-        throw new Error('Route information is missing. Please go back and select your route.');
+        throw new Error(
+          "Route information is missing. Please go back and select your route.",
+        );
       }
 
       if (!passengerData?.passengers || passengerData.passengers.length === 0) {
-        throw new Error('Passenger information is missing. Please go back and add passenger details.');
+        throw new Error(
+          "Passenger information is missing. Please go back and add passenger details.",
+        );
       }
 
       if (!passengerData.contactEmail && !user?.email) {
-        throw new Error('Contact email is required. Please provide a contact email.');
+        throw new Error(
+          "Contact email is required. Please provide a contact email.",
+        );
       }
 
       // Transform route data to match booking API expectations
       const transformedRoute = {
         from: {
-          code: routeData.from?.code || '',
-          name: routeData.from?.name || '',
-          city: routeData.from?.city || '',
-          country: routeData.from?.country || ''
+          code: routeData.from?.code || "",
+          name: routeData.from?.name || "",
+          city: routeData.from?.city || "",
+          country: routeData.from?.country || "",
         },
         to: {
-          code: routeData.to?.code || '',
-          name: routeData.to?.name || '',
-          city: routeData.to?.city || '',
-          country: routeData.to?.country || ''
+          code: routeData.to?.code || "",
+          name: routeData.to?.name || "",
+          city: routeData.to?.city || "",
+          country: routeData.to?.country || "",
         },
         departureDate: routeData.departureDate,
         ...(routeData.returnDate && { returnDate: routeData.returnDate }),
-        tripType: routeData.tripType || 'oneway'
+        tripType: routeData.tripType || "oneway",
       };
 
       // Create booking first
@@ -212,40 +276,44 @@ export default function Payment() {
         passengers: passengerData.passengers,
         contactEmail: passengerData.contactEmail || user?.email || "",
         termsAccepted: true,
+        selectedFlight: selectedFlight,
+        totalAmount: calculateTotal(),
       };
 
-      console.log('Creating booking for Stripe payment:', bookingRequest);
-      const bookingResponse = await authenticatedFetch('/api/bookings', {
-        method: 'POST',
+      console.log("Creating booking for Stripe payment:", bookingRequest);
+      const bookingResponse = await authenticatedFetch("/api/bookings", {
+        method: "POST",
         body: JSON.stringify(bookingRequest),
       });
 
       if (!bookingResponse.ok) {
         const errorData = await bookingResponse.text();
-        console.error('Booking creation failed:', {
+        console.error("Booking creation failed:", {
           status: bookingResponse.status,
-          error: errorData
+          error: errorData,
         });
 
         try {
           const parsedError = JSON.parse(errorData);
-          throw new Error(parsedError.message || 'Failed to create booking');
+          throw new Error(parsedError.message || "Failed to create booking");
         } catch {
-          throw new Error(`Failed to create booking: ${bookingResponse.status} ${bookingResponse.statusText}`);
+          throw new Error(
+            `Failed to create booking: ${bookingResponse.status} ${bookingResponse.statusText}`,
+          );
         }
       }
 
       const bookingResult = await bookingResponse.json();
-      console.log('Booking created successfully for Stripe:', bookingResult);
+      console.log("Booking created successfully for Stripe:", bookingResult);
 
       if (!bookingResult.success || !bookingResult.booking) {
-        throw new Error(bookingResult.message || 'Failed to create booking');
+        throw new Error(bookingResult.message || "Failed to create booking");
       }
 
       setBookingData(bookingResult.booking);
     } catch (err) {
-      console.error('Booking creation error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create booking');
+      console.error("Booking creation error:", err);
+      setError(err instanceof Error ? err.message : "Failed to create booking");
     } finally {
       setLoading(false);
     }
@@ -253,7 +321,12 @@ export default function Payment() {
 
   // Create booking when Stripe is selected
   useEffect(() => {
-    if (selectedPaymentMethod === 'stripe' && routeData && passengerData && !bookingData) {
+    if (
+      selectedPaymentMethod === "stripe" &&
+      routeData &&
+      passengerData &&
+      !bookingData
+    ) {
       createBookingForStripe();
     }
   }, [selectedPaymentMethod, routeData, passengerData]);
@@ -265,41 +338,47 @@ export default function Payment() {
     try {
       // Validate required data first
       if (!routeData) {
-        throw new Error('Route information is missing. Please go back and select your route.');
+        throw new Error(
+          "Route information is missing. Please go back and select your route.",
+        );
       }
 
       if (!passengerData?.passengers || passengerData.passengers.length === 0) {
-        throw new Error('Passenger information is missing. Please go back and add passenger details.');
+        throw new Error(
+          "Passenger information is missing. Please go back and add passenger details.",
+        );
       }
 
       if (!passengerData.contactEmail && !user?.email) {
-        throw new Error('Contact email is required. Please provide a contact email.');
+        throw new Error(
+          "Contact email is required. Please provide a contact email.",
+        );
       }
 
       // Transform route data to match booking API expectations
       const transformedRoute = {
         from: {
-          code: routeData.from?.code || '',
-          name: routeData.from?.name || '',
-          city: routeData.from?.city || '',
-          country: routeData.from?.country || ''
+          code: routeData.from?.code || "",
+          name: routeData.from?.name || "",
+          city: routeData.from?.city || "",
+          country: routeData.from?.country || "",
         },
         to: {
-          code: routeData.to?.code || '',
-          name: routeData.to?.name || '',
-          city: routeData.to?.city || '',
-          country: routeData.to?.country || ''
+          code: routeData.to?.code || "",
+          name: routeData.to?.name || "",
+          city: routeData.to?.city || "",
+          country: routeData.to?.country || "",
         },
         departureDate: routeData.departureDate,
         ...(routeData.returnDate && { returnDate: routeData.returnDate }),
-        tripType: routeData.tripType || 'oneway'
+        tripType: routeData.tripType || "oneway",
       };
 
-      console.log('Creating booking with data:', {
+      console.log("Creating booking with data:", {
         route: transformedRoute,
         passengers: passengerData.passengers,
         contactEmail: passengerData.contactEmail || user?.email,
-        passengerCount: passengerData.passengers.length
+        passengerCount: passengerData.passengers.length,
       });
 
       // Create booking first
@@ -308,85 +387,99 @@ export default function Payment() {
         passengers: passengerData.passengers,
         contactEmail: passengerData.contactEmail || user?.email || "",
         termsAccepted: true,
+        selectedFlight: selectedFlight,
+        totalAmount: calculateTotal(),
       };
 
-      console.log('Sending booking request to /api/bookings...');
-      const bookingResponse = await authenticatedFetch('/api/bookings', {
-        method: 'POST',
+      console.log("Sending booking request to /api/bookings...");
+      const bookingResponse = await authenticatedFetch("/api/bookings", {
+        method: "POST",
         body: JSON.stringify(bookingRequest),
       });
 
-      console.log('Booking response status:', bookingResponse.status);
+      console.log("Booking response status:", bookingResponse.status);
 
       if (!bookingResponse.ok) {
         const errorData = await bookingResponse.text();
-        console.error('Booking creation failed:', {
+        console.error("Booking creation failed:", {
           status: bookingResponse.status,
           statusText: bookingResponse.statusText,
           error: errorData,
-          url: '/api/bookings',
-          requestData: bookingRequest
+          url: "/api/bookings",
+          requestData: bookingRequest,
         });
 
         // Try to parse error message
         try {
           const parsedError = JSON.parse(errorData);
-          throw new Error(parsedError.message || 'Failed to create booking');
+          throw new Error(parsedError.message || "Failed to create booking");
         } catch {
-          throw new Error(`Failed to create booking: ${bookingResponse.status} ${bookingResponse.statusText}`);
+          throw new Error(
+            `Failed to create booking: ${bookingResponse.status} ${bookingResponse.statusText}`,
+          );
         }
       }
 
       const bookingResult = await bookingResponse.json();
-      console.log('Booking created successfully:', bookingResult);
+      console.log("Booking created successfully:", bookingResult);
 
       if (!bookingResult.success || !bookingResult.booking) {
-        throw new Error(bookingResult.message || 'Failed to create booking');
+        throw new Error(bookingResult.message || "Failed to create booking");
       }
 
       const booking = bookingResult.booking;
 
       // Create PayPal order
-      const paypalOrderResponse = await authenticatedFetch('/api/payments/paypal/create-order', {
-        method: 'POST',
-        body: JSON.stringify({
-          bookingId: booking.id,
-          amount: calculateTotal(),
-          currency: 'USD'
-        }),
-      });
+      const paypalOrderResponse = await authenticatedFetch(
+        "/api/payments/paypal/create-order",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            bookingId: booking.id,
+            amount: calculateTotal(),
+            currency: "USD",
+          }),
+        },
+      );
 
       if (!paypalOrderResponse.ok) {
         const errorData = await paypalOrderResponse.text();
-        console.error('PayPal order creation failed:', {
+        console.error("PayPal order creation failed:", {
           status: paypalOrderResponse.status,
           statusText: paypalOrderResponse.statusText,
-          error: errorData
+          error: errorData,
         });
 
         try {
           const parsedError = JSON.parse(errorData);
-          throw new Error(parsedError.message || 'Failed to create PayPal order');
+          throw new Error(
+            parsedError.message || "Failed to create PayPal order",
+          );
         } catch {
-          throw new Error(`Failed to create PayPal order: ${paypalOrderResponse.status} ${paypalOrderResponse.statusText}`);
+          throw new Error(
+            `Failed to create PayPal order: ${paypalOrderResponse.status} ${paypalOrderResponse.statusText}`,
+          );
         }
       }
 
       const paypalOrderData = await paypalOrderResponse.json();
-      console.log('PayPal order created:', paypalOrderData);
+      console.log("PayPal order created:", paypalOrderData);
 
       const { orderID, approvalUrl } = paypalOrderData;
 
       if (!approvalUrl) {
-        throw new Error('PayPal approval URL not received');
+        throw new Error("PayPal approval URL not received");
       }
 
       // Redirect to PayPal for approval
       window.location.href = approvalUrl;
-
     } catch (err) {
-      console.error('PayPal payment error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred while processing PayPal payment. Please try again.');
+      console.error("PayPal payment error:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An error occurred while processing PayPal payment. Please try again.",
+      );
     } finally {
       setPaypalLoading(false);
     }
@@ -394,7 +487,7 @@ export default function Payment() {
 
   const handlePayment = async () => {
     // Set all fields as touched for validation
-    Object.keys(paymentDetails).forEach(field => {
+    Object.keys(paymentDetails).forEach((field) => {
       setFieldTouched(field, true);
     });
 
@@ -411,30 +504,34 @@ export default function Payment() {
     try {
       // Validate required data first
       if (!routeData) {
-        throw new Error('Route information is missing. Please go back and select your route.');
+        throw new Error(
+          "Route information is missing. Please go back and select your route.",
+        );
       }
 
       if (!passengerData?.passengers || passengerData.passengers.length === 0) {
-        throw new Error('Passenger information is missing. Please go back and add passenger details.');
+        throw new Error(
+          "Passenger information is missing. Please go back and add passenger details.",
+        );
       }
 
       // Transform route data to match booking API expectations
       const transformedRoute = {
         from: {
-          code: routeData.from?.code || '',
-          name: routeData.from?.name || '',
-          city: routeData.from?.city || '',
-          country: routeData.from?.country || ''
+          code: routeData.from?.code || "",
+          name: routeData.from?.name || "",
+          city: routeData.from?.city || "",
+          country: routeData.from?.country || "",
         },
         to: {
-          code: routeData.to?.code || '',
-          name: routeData.to?.name || '',
-          city: routeData.to?.city || '',
-          country: routeData.to?.country || ''
+          code: routeData.to?.code || "",
+          name: routeData.to?.name || "",
+          city: routeData.to?.city || "",
+          country: routeData.to?.country || "",
         },
         departureDate: routeData.departureDate,
         ...(routeData.returnDate && { returnDate: routeData.returnDate }),
-        tripType: routeData.tripType || 'oneway'
+        tripType: routeData.tripType || "oneway",
       };
 
       // Create booking first
@@ -443,21 +540,23 @@ export default function Payment() {
         passengers: passengerData.passengers,
         contactEmail: passengerData.contactEmail || user?.email || "",
         termsAccepted: true,
+        selectedFlight: selectedFlight,
+        totalAmount: calculateTotal(),
       };
 
-      const bookingResponse = await authenticatedFetch('/api/bookings', {
-        method: 'POST',
+      const bookingResponse = await authenticatedFetch("/api/bookings", {
+        method: "POST",
         body: JSON.stringify(bookingRequest),
       });
 
       if (!bookingResponse.ok) {
-        throw new Error('Failed to create booking');
+        throw new Error("Failed to create booking");
       }
 
       const bookingResult = await bookingResponse.json();
 
       if (!bookingResult.success || !bookingResult.booking) {
-        throw new Error(bookingResult.message || 'Failed to create booking');
+        throw new Error(bookingResult.message || "Failed to create booking");
       }
 
       const booking = bookingResult.booking;
@@ -466,22 +565,25 @@ export default function Payment() {
       const paymentRequest: PaymentRequest = {
         bookingId: booking.id,
         paymentMethod: selectedPaymentMethod as "card" | "paypal",
-        paymentDetails: selectedPaymentMethod === 'card' ? {
-          cardNumber: paymentDetails.cardNumber.replace(/\s/g, ''),
-          expiryDate: paymentDetails.expiryDate,
-          cvv: paymentDetails.cvv,
-          cardholderName: paymentDetails.cardholderName,
-          country: paymentDetails.country,
-        } : {},
+        paymentDetails:
+          selectedPaymentMethod === "card"
+            ? {
+                cardNumber: paymentDetails.cardNumber.replace(/\s/g, ""),
+                expiryDate: paymentDetails.expiryDate,
+                cvv: paymentDetails.cvv,
+                cardholderName: paymentDetails.cardholderName,
+                country: paymentDetails.country,
+              }
+            : {},
       };
 
-      const paymentResponse = await authenticatedFetch('/api/payments', {
-        method: 'POST',
+      const paymentResponse = await authenticatedFetch("/api/payments", {
+        method: "POST",
         body: JSON.stringify(paymentRequest),
       });
 
       if (!paymentResponse.ok) {
-        throw new Error('Payment failed');
+        throw new Error("Payment failed");
       }
 
       const paymentResult: PaymentResponse = await paymentResponse.json();
@@ -490,19 +592,21 @@ export default function Payment() {
         setSuccess(true);
 
         // Clear stored data
-        localStorage.removeItem('selectedRoute');
-        localStorage.removeItem('passengerData');
+        localStorage.removeItem("selectedRoute");
+        localStorage.removeItem("passengerData");
 
         // Redirect to thank you page after short delay
         setTimeout(() => {
-          navigate('/userform/thankyou');
+          navigate("/userform/thankyou");
         }, 2000);
       } else {
-        setError(paymentResult.message || 'Payment failed. Please try again.');
+        setError(paymentResult.message || "Payment failed. Please try again.");
       }
     } catch (err) {
-      console.error('Payment error:', err);
-      setError('An error occurred while processing your payment. Please try again.');
+      console.error("Payment error:", err);
+      setError(
+        "An error occurred while processing your payment. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -512,10 +616,13 @@ export default function Payment() {
     <div className=" min-h-screen bg-ob-background font-plus-jakarta">
       {/* Header */}
       <header className="text-left">
-        <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
-          <img 
-            src="/onboard/result.png" 
-            alt="OnboardTicket Logo" 
+        <div
+          className="flex items-center cursor-pointer"
+          onClick={() => navigate("/")}
+        >
+          <img
+            src="/onboard/result.png"
+            alt="OnboardTicket Logo"
             className="h-[40px] sm:h-[59px] w-auto max-w-[200px] sm:max-w-[294px] cursor-pointer"
             loading="eager"
             onClick={() => navigate("/")}
@@ -532,14 +639,43 @@ export default function Payment() {
                 Secure Payment
               </h1>
               <div className="space-y-2 text-white">
+                {selectedFlight && (
+                  <div className="mb-4 p-3 bg-white/10 rounded-lg">
+                    <div className="text-sm text-white/90 mb-1">
+                      Selected Flight
+                    </div>
+                    <div className="text-xs text-white/70">
+                      {selectedFlight.validatingAirlineCodes?.[0]} •{" "}
+                      {getCurrency()}{" "}
+                      {parseInt(
+                        selectedFlight.price?.total || "0",
+                      ).toLocaleString()}{" "}
+                      per person
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center gap-8">
-                  <span className="text-lg lg:text-xl font-bold">TOTAL:</span>
-                  <span className="text-xl lg:text-2xl font-bold">${calculateTotal()}</span>
+                  <span className="text-lg lg:text-xl font-bold">
+                    Base Price:
+                  </span>
+                  <span className="text-xl lg:text-2xl font-bold">
+                    {getCurrency()}
+                    {getBasePrice().toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex items-center gap-8">
-                  <span className="text-lg lg:text-xl font-bold">Passengers:</span>
+                  <span className="text-lg lg:text-xl font-bold">
+                    Passengers:
+                  </span>
                   <span className="text-xl lg:text-2xl font-bold">
                     {passengerData?.passengers?.length || 1}
+                  </span>
+                </div>
+                <div className="flex items-center gap-8">
+                  <span className="text-lg lg:text-xl font-bold">TOTAL:</span>
+                  <span className="text-xl lg:text-2xl font-bold">
+                    {getCurrency()}
+                    {calculateTotal().toFixed(2)}
                   </span>
                 </div>
                 {routeData && (
@@ -555,7 +691,9 @@ export default function Payment() {
               {/* Security Badge */}
               <div className="flex items-center gap-2 mt-4 text-green-200">
                 <Shield className="w-5 h-5" />
-                <span className="text-sm font-medium">256-bit SSL Encrypted</span>
+                <span className="text-sm font-medium">
+                  256-bit SSL Encrypted
+                </span>
               </div>
             </div>
 
@@ -584,8 +722,13 @@ export default function Payment() {
           {/* Success Message */}
           {success && (
             <div className="mb-8 p-6 bg-green-50 border border-green-200 rounded-lg text-center">
-              <div className="text-green-600 text-2xl font-bold mb-2">Payment Successful!</div>
-              <p className="text-green-700">Your booking has been confirmed. Redirecting to confirmation page...</p>
+              <div className="text-green-600 text-2xl font-bold mb-2">
+                Payment Successful!
+              </div>
+              <p className="text-green-700">
+                Your booking has been confirmed. Redirecting to confirmation
+                page...
+              </p>
             </div>
           )}
 
@@ -603,9 +746,9 @@ export default function Payment() {
             {/* Payment Method Tabs */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               {[
-                { key: 'stripe', label: 'Stripe (Recommended)', icon: Zap },
-                { key: 'card', label: 'Credit Card', icon: CreditCard },
-                { key: 'paypal', label: 'PayPal', icon: null }
+                { key: "stripe", label: "Stripe (Recommended)", icon: Zap },
+                { key: "card", label: "Credit Card", icon: CreditCard },
+                { key: "paypal", label: "PayPal", icon: null },
               ].map((method) => (
                 <button
                   key={method.key}
@@ -613,9 +756,9 @@ export default function Payment() {
                   disabled={loading || success}
                   className={`flex-1 px-6 py-4 rounded-lg border-2 font-bold text-lg transition-colors flex items-center justify-center gap-2 ${
                     selectedPaymentMethod === method.key
-                      ? 'bg-[#505BFB] border-[#505BFB] text-white shadow-lg'
-                      : 'bg-[#EBECFF] border-white text-[#848484] hover:bg-white'
-                  } ${loading || success ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      ? "bg-[#505BFB] border-[#505BFB] text-white shadow-lg"
+                      : "bg-[#EBECFF] border-white text-[#848484] hover:bg-white"
+                  } ${loading || success ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   {method.icon && <method.icon className="w-5 h-5" />}
                   {method.label}
@@ -624,7 +767,7 @@ export default function Payment() {
             </div>
 
             {/* Payment Form - Only show for card payments */}
-            {selectedPaymentMethod === 'card' && !success && (
+            {selectedPaymentMethod === "card" && !success && (
               <div className="space-y-6">
                 {/* Country */}
                 <div>
@@ -633,11 +776,15 @@ export default function Payment() {
                   </label>
                   <select
                     value={paymentDetails.country}
-                    onChange={(e) => handleInputChange('country', e.target.value)}
-                    onBlur={() => setFieldTouched('country', true)}
+                    onChange={(e) =>
+                      handleInputChange("country", e.target.value)
+                    }
+                    onBlur={() => setFieldTouched("country", true)}
                     disabled={loading}
                     className={`w-full px-6 py-4 rounded-lg border bg-white text-[#20242A] font-bold text-lg focus:outline-none focus:ring-2 focus:ring-[#505BFB] ${
-                      hasFieldError('country') ? 'border-red-500' : 'border-gray-300'
+                      hasFieldError("country")
+                        ? "border-red-500"
+                        : "border-gray-300"
                     }`}
                   >
                     <option value="">Select Country</option>
@@ -649,10 +796,10 @@ export default function Payment() {
                     <option value="AU">Australia</option>
                     <option value="other">Other</option>
                   </select>
-                  {hasFieldError('country') && (
+                  {hasFieldError("country") && (
                     <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
                       <AlertCircle className="w-4 h-4" />
-                      <span>{getFieldError('country')}</span>
+                      <span>{getFieldError("country")}</span>
                     </div>
                   )}
                 </div>
@@ -666,17 +813,21 @@ export default function Payment() {
                     type="text"
                     placeholder="Enter cardholder name"
                     value={paymentDetails.cardholderName}
-                    onChange={(e) => handleInputChange('cardholderName', e.target.value)}
-                    onBlur={() => setFieldTouched('cardholderName', true)}
+                    onChange={(e) =>
+                      handleInputChange("cardholderName", e.target.value)
+                    }
+                    onBlur={() => setFieldTouched("cardholderName", true)}
                     disabled={loading}
                     className={`w-full px-6 py-4 rounded-lg border bg-white text-[#20242A] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB] ${
-                      hasFieldError('cardholderName') ? 'border-red-500' : 'border-gray-300'
+                      hasFieldError("cardholderName")
+                        ? "border-red-500"
+                        : "border-gray-300"
                     }`}
                   />
-                  {hasFieldError('cardholderName') && (
+                  {hasFieldError("cardholderName") && (
                     <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
                       <AlertCircle className="w-4 h-4" />
-                      <span>{getFieldError('cardholderName')}</span>
+                      <span>{getFieldError("cardholderName")}</span>
                     </div>
                   )}
                 </div>
@@ -690,17 +841,21 @@ export default function Payment() {
                     type="text"
                     placeholder="1234 5678 9012 3456"
                     value={paymentDetails.cardNumber}
-                    onChange={(e) => handleInputChange('cardNumber', e.target.value)}
-                    onBlur={() => setFieldTouched('cardNumber', true)}
+                    onChange={(e) =>
+                      handleInputChange("cardNumber", e.target.value)
+                    }
+                    onBlur={() => setFieldTouched("cardNumber", true)}
                     disabled={loading}
                     className={`w-full px-6 py-4 rounded-lg border bg-white text-[#20242A] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB] ${
-                      hasFieldError('cardNumber') ? 'border-red-500' : 'border-gray-300'
+                      hasFieldError("cardNumber")
+                        ? "border-red-500"
+                        : "border-gray-300"
                     }`}
                   />
-                  {hasFieldError('cardNumber') && (
+                  {hasFieldError("cardNumber") && (
                     <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
                       <AlertCircle className="w-4 h-4" />
-                      <span>{getFieldError('cardNumber')}</span>
+                      <span>{getFieldError("cardNumber")}</span>
                     </div>
                   )}
                 </div>
@@ -715,17 +870,21 @@ export default function Payment() {
                       type="text"
                       placeholder="MM/YY"
                       value={paymentDetails.expiryDate}
-                      onChange={(e) => handleInputChange('expiryDate', e.target.value)}
-                      onBlur={() => setFieldTouched('expiryDate', true)}
+                      onChange={(e) =>
+                        handleInputChange("expiryDate", e.target.value)
+                      }
+                      onBlur={() => setFieldTouched("expiryDate", true)}
                       disabled={loading}
                       className={`w-full px-6 py-4 rounded-lg border bg-white text-[#20242A] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB] ${
-                        hasFieldError('expiryDate') ? 'border-red-500' : 'border-gray-300'
+                        hasFieldError("expiryDate")
+                          ? "border-red-500"
+                          : "border-gray-300"
                       }`}
                     />
-                    {hasFieldError('expiryDate') && (
+                    {hasFieldError("expiryDate") && (
                       <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
                         <AlertCircle className="w-4 h-4" />
-                        <span>{getFieldError('expiryDate')}</span>
+                        <span>{getFieldError("expiryDate")}</span>
                       </div>
                     )}
                   </div>
@@ -738,17 +897,19 @@ export default function Payment() {
                       type="text"
                       placeholder="123"
                       value={paymentDetails.cvv}
-                      onChange={(e) => handleInputChange('cvv', e.target.value)}
-                      onBlur={() => setFieldTouched('cvv', true)}
+                      onChange={(e) => handleInputChange("cvv", e.target.value)}
+                      onBlur={() => setFieldTouched("cvv", true)}
                       disabled={loading}
                       className={`w-full px-6 py-4 rounded-lg border bg-white text-[#20242A] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB] ${
-                        hasFieldError('cvv') ? 'border-red-500' : 'border-gray-300'
+                        hasFieldError("cvv")
+                          ? "border-red-500"
+                          : "border-gray-300"
                       }`}
                     />
-                    {hasFieldError('cvv') && (
+                    {hasFieldError("cvv") && (
                       <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
                         <AlertCircle className="w-4 h-4" />
-                        <span>{getFieldError('cvv')}</span>
+                        <span>{getFieldError("cvv")}</span>
                       </div>
                     )}
                   </div>
@@ -758,10 +919,13 @@ export default function Payment() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-center gap-2 text-blue-700">
                     <Shield className="w-5 h-5" />
-                    <span className="font-semibold">Your payment is secure</span>
+                    <span className="font-semibold">
+                      Your payment is secure
+                    </span>
                   </div>
                   <p className="text-blue-600 text-sm mt-1">
-                    All payment information is encrypted and processed securely. We never store your card details.
+                    All payment information is encrypted and processed securely.
+                    We never store your card details.
                   </p>
                 </div>
 
@@ -771,8 +935,8 @@ export default function Payment() {
                   disabled={loading || hasAnyError() || success}
                   className={`w-full py-4 font-bold text-xl rounded-xl transition-colors shadow-lg mt-8 ${
                     loading || hasAnyError() || success
-                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                      : 'bg-[#505BFB] text-white hover:bg-blue-600'
+                      ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                      : "bg-[#505BFB] text-white hover:bg-blue-600"
                   }`}
                 >
                   {loading ? (
@@ -781,14 +945,14 @@ export default function Payment() {
                       Processing Payment...
                     </div>
                   ) : (
-                    `PAY $${calculateTotal()}`
+                    `PAY ${getCurrency()}${calculateTotal().toFixed(2)}`
                   )}
                 </button>
               </div>
             )}
 
             {/* Stripe Payment */}
-            {selectedPaymentMethod === 'stripe' && !success && (
+            {selectedPaymentMethod === "stripe" && !success && (
               <div className="space-y-6">
                 {/* Stripe Info */}
                 <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
@@ -797,15 +961,24 @@ export default function Payment() {
                       <Zap className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-purple-700">Stripe Payment</h3>
-                      <p className="text-sm text-purple-600">Fast, secure, and trusted worldwide</p>
+                      <h3 className="text-xl font-bold text-purple-700">
+                        Stripe Payment
+                      </h3>
+                      <p className="text-sm text-purple-600">
+                        Fast, secure, and trusted worldwide
+                      </p>
                     </div>
                   </div>
 
                   <div className="bg-white/80 border border-purple-200 rounded-lg p-4 mb-4">
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold text-gray-700">Total Amount:</span>
-                      <span className="font-bold text-xl text-purple-600">${calculateTotal()}</span>
+                      <span className="font-semibold text-gray-700">
+                        Total Amount:
+                      </span>
+                      <span className="font-bold text-xl text-purple-600">
+                        {getCurrency()}
+                        {calculateTotal().toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center text-sm text-gray-600 mt-2">
                       <span>Passengers:</span>
@@ -816,13 +989,16 @@ export default function Payment() {
                   {bookingData && (
                     <StripePaymentForm
                       amount={calculateTotal()}
-                      currency="USD"
+                      currency={getCurrency().replace("$", "") || "USD"}
                       bookingId={bookingData.id}
                       onSuccess={(paymentIntentId) => {
-                        console.log('Stripe payment successful:', paymentIntentId);
+                        console.log(
+                          "Stripe payment successful:",
+                          paymentIntentId,
+                        );
                         setSuccess(true);
                         setTimeout(() => {
-                          navigate('/payment/success');
+                          navigate("/payment/success");
                         }, 1500);
                       }}
                       onError={(error) => {
@@ -837,7 +1013,7 @@ export default function Payment() {
             )}
 
             {/* PayPal Payment */}
-            {selectedPaymentMethod === 'paypal' && !success && (
+            {selectedPaymentMethod === "paypal" && !success && (
               <div className="space-y-6">
                 {/* PayPal Info */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
@@ -846,19 +1022,29 @@ export default function Payment() {
                       <span className="text-white font-bold text-lg">PP</span>
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-[#0070ba]">PayPal</h3>
-                      <p className="text-sm text-blue-600">Secure payment with PayPal</p>
+                      <h3 className="text-xl font-bold text-[#0070ba]">
+                        PayPal
+                      </h3>
+                      <p className="text-sm text-blue-600">
+                        Secure payment with PayPal
+                      </p>
                     </div>
                   </div>
 
                   <p className="text-blue-700 mb-4">
-                    You will be redirected to PayPal to complete your payment securely.
+                    You will be redirected to PayPal to complete your payment
+                    securely.
                   </p>
 
                   <div className="bg-white border border-blue-200 rounded-lg p-4 mb-4">
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold text-gray-700">Total Amount:</span>
-                      <span className="font-bold text-xl text-[#0070ba]">${calculateTotal()}</span>
+                      <span className="font-semibold text-gray-700">
+                        Total Amount:
+                      </span>
+                      <span className="font-bold text-xl text-[#0070ba]">
+                        {getCurrency()}
+                        {calculateTotal().toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center text-sm text-gray-600 mt-2">
                       <span>Passengers:</span>
@@ -873,8 +1059,8 @@ export default function Payment() {
                   disabled={paypalLoading}
                   className={`w-full py-4 font-bold text-xl rounded-xl transition-colors shadow-lg ${
                     paypalLoading
-                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                      : 'bg-[#0070ba] text-white hover:bg-[#005ea6]'
+                      ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                      : "bg-[#0070ba] text-white hover:bg-[#005ea6]"
                   }`}
                 >
                   {paypalLoading ? (
@@ -885,7 +1071,10 @@ export default function Payment() {
                   ) : (
                     <div className="flex items-center justify-center gap-3">
                       <span>Pay with PayPal</span>
-                      <span className="text-lg">$${calculateTotal()}</span>
+                      <span className="text-lg">
+                        {getCurrency()}
+                        {calculateTotal().toFixed(2)}
+                      </span>
                     </div>
                   )}
                 </button>
@@ -897,7 +1086,9 @@ export default function Payment() {
                     <span className="font-semibold">Secure PayPal Payment</span>
                   </div>
                   <p className="text-gray-600 text-sm mt-1">
-                    Your payment is protected by PayPal's Buyer Protection. You can pay with your PayPal balance, bank account, or credit card.
+                    Your payment is protected by PayPal's Buyer Protection. You
+                    can pay with your PayPal balance, bank account, or credit
+                    card.
                   </p>
                 </div>
               </div>
@@ -906,8 +1097,6 @@ export default function Payment() {
         </section>
       </main>
 
-    
-
       {/* Footer */}
       <footer className="mt-24 px-4 sm:px-8 lg:px-36">
         <div className="bg-ticket-footer rounded-t-lg p-8 lg:p-16">
@@ -915,18 +1104,29 @@ export default function Payment() {
             {/* Logo and Copyright */}
             <div className="space-y-4">
               <div>
-                <img 
-                  src="/onboard/result.png" 
-                  alt="OnboardTicket Logo" 
+                <img
+                  src="/onboard/result.png"
+                  alt="OnboardTicket Logo"
                   className="w-40 h-10 mb-4 cursor-pointer"
                   onClick={() => navigate("/")}
                 />
                 <hr className="border-white mb-4" />
-                <div className="text-base font-semibold text-[#3150DA]">Onboardticket.com</div>
-                <div className="text-xs opacity-80 mt-2 text-black">© 2025 — Copyright</div>
+                <div className="text-base font-semibold text-[#3150DA]">
+                  Onboardticket.com
+                </div>
+                <div className="text-xs opacity-80 mt-2 text-black">
+                  © 2025 — Copyright
+                </div>
               </div>
               <p className="text-xs opacity-80 leading-relaxed text-black">
-                OnboardTicket is committed to upholding the highest standards in compliance with international civil aviation regulations and ethical booking practices. This includes, but is not limited to, strict avoidance of misuse of booking classes, fraudulent activities, duplicate, speculative, or fictitious reservations. Users who engage in repeated cancellations without legitimate intent will be subject to monitoring, and may face usage restrictions or permanent bans from our platform.
+                OnboardTicket is committed to upholding the highest standards in
+                compliance with international civil aviation regulations and
+                ethical booking practices. This includes, but is not limited to,
+                strict avoidance of misuse of booking classes, fraudulent
+                activities, duplicate, speculative, or fictitious reservations.
+                Users who engage in repeated cancellations without legitimate
+                intent will be subject to monitoring, and may face usage
+                restrictions or permanent bans from our platform.
               </p>
             </div>
             {/* About */}
@@ -935,9 +1135,24 @@ export default function Payment() {
                 About
               </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-black">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/about")}>Who We are ?</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/privacy-policy")}>Privacy Policy</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/terms-conditions")}>Terms & Conditions</li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/about")}
+                >
+                  Who We are ?
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/privacy-policy")}
+                >
+                  Privacy Policy
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/terms-conditions")}
+                >
+                  Terms & Conditions
+                </li>
               </ul>
             </div>
             {/* Get Help */}
@@ -946,9 +1161,24 @@ export default function Payment() {
                 Get Help
               </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-black">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/faq")}>FAQs</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/payment")}>Payment</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/contact")}>Contact Support 24/7</li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/faq")}
+                >
+                  FAQs
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/payment")}
+                >
+                  Payment
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/contact")}
+                >
+                  Contact Support 24/7
+                </li>
               </ul>
             </div>
             {/* Follow Us */}

@@ -10,6 +10,8 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   const [formData, setFormData] = useState<RegisterRequest>({
     email: "",
@@ -26,7 +28,9 @@ export default function Register() {
     }
   }, [isAuthenticated, navigate]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -37,8 +41,13 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.email || !formData.password || !formData.firstName || !formData.lastName) {
+
+    if (
+      !formData.email ||
+      !formData.password ||
+      !formData.firstName ||
+      !formData.lastName
+    ) {
       setError("Please fill in all fields");
       return;
     }
@@ -53,9 +62,47 @@ export default function Register() {
 
     try {
       const response = await register(formData);
-      
+
       if (response.success) {
-        navigate("/dashboard");
+        setSuccess(true);
+
+        // Send verification email
+        try {
+          const verificationResponse = await fetch(
+            "/api/auth/send-verification",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                email: formData.email,
+                userId: response.user?.id,
+                userName: formData.firstName,
+              }),
+            },
+          );
+
+          const verificationData = await verificationResponse.json();
+
+          if (verificationData.success) {
+            setVerificationSent(true);
+          } else {
+            console.error(
+              "Failed to send verification email:",
+              verificationData.message,
+            );
+            // Still show success but mention email issue
+            setError(
+              "Account created successfully, but there was an issue sending the verification email. Please contact support.",
+            );
+          }
+        } catch (verificationError) {
+          console.error("Verification email error:", verificationError);
+          setError(
+            "Account created successfully, but there was an issue sending the verification email. Please contact support.",
+          );
+        }
       } else {
         setError(response.message || "Registration failed. Please try again.");
       }
@@ -71,7 +118,10 @@ export default function Register() {
       {/* Header */}
       <header className="container mx-auto px-4 md:px-12 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => navigate("/")}
+          >
             <img
               src="/onboard/result.png"
               alt="OnboardTicket Logo"
@@ -80,7 +130,7 @@ export default function Register() {
             />
           </div>
           <div className="hidden md:flex items-center gap-4">
-            <Link 
+            <Link
               to="/login"
               className="px-8 py-2 text-brand-text-primary font-bold text-lg hover:bg-gray-100 rounded-lg transition-colors"
             >
@@ -109,10 +159,40 @@ export default function Register() {
               </div>
             )}
 
+            {success && verificationSent && (
+              <div className="mb-6 p-6 bg-green-50 border border-green-200 rounded-lg">
+                <div className="text-center">
+                  <Mail className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-green-800 mb-2">
+                    Account Created Successfully!
+                  </h3>
+                  <p className="text-green-700 text-sm mb-4">
+                    We've sent a verification email to{" "}
+                    <strong>{formData.email}</strong>. Please check your inbox
+                    and click the verification link to activate your account.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/login")}
+                    className="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors mb-2"
+                  >
+                    Continue to Sign In
+                  </button>
+                  <p className="text-xs text-green-600">
+                    Didn't receive the email? Check your spam folder or contact
+                    support.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Title Selection */}
               <div>
-                <label htmlFor="title" className="block text-sm font-semibold text-[#637996] mb-2">
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-semibold text-[#637996] mb-2"
+                >
                   Title
                 </label>
                 <select
@@ -131,7 +211,10 @@ export default function Register() {
 
               {/* First Name */}
               <div>
-                <label htmlFor="firstName" className="block text-sm font-semibold text-[#637996] mb-2">
+                <label
+                  htmlFor="firstName"
+                  className="block text-sm font-semibold text-[#637996] mb-2"
+                >
                   First Name
                 </label>
                 <div className="relative">
@@ -151,7 +234,10 @@ export default function Register() {
 
               {/* Last Name */}
               <div>
-                <label htmlFor="lastName" className="block text-sm font-semibold text-[#637996] mb-2">
+                <label
+                  htmlFor="lastName"
+                  className="block text-sm font-semibold text-[#637996] mb-2"
+                >
                   Last Name
                 </label>
                 <div className="relative">
@@ -171,7 +257,10 @@ export default function Register() {
 
               {/* Email Field */}
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-[#637996] mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-semibold text-[#637996] mb-2"
+                >
                   Email Address
                 </label>
                 <div className="relative">
@@ -191,7 +280,10 @@ export default function Register() {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-[#637996] mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-semibold text-[#637996] mb-2"
+                >
                   Password
                 </label>
                 <div className="relative">
@@ -212,7 +304,11 @@ export default function Register() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#637996] hover:text-[#3839C9]"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -235,8 +331,8 @@ export default function Register() {
             <div className="mt-8 text-center">
               <div className="text-[#637996]">
                 Already have an account?{" "}
-                <Link 
-                  to="/login" 
+                <Link
+                  to="/login"
                   className="text-[#3839C9] hover:text-blue-700 font-semibold"
                 >
                   Sign in here
@@ -270,27 +366,62 @@ export default function Register() {
             </div>
             {/* About */}
             <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center">
-              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">About</h4>
+              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">
+                About
+              </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-[#A2A2A2]">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/about")}>Who We are ?</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/privacy-policy")}>Privacy Policy</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/terms-conditions")}>Terms & Conditions</li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/about")}
+                >
+                  Who We are ?
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/privacy-policy")}
+                >
+                  Privacy Policy
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/terms-conditions")}
+                >
+                  Terms & Conditions
+                </li>
               </ul>
             </div>
             {/* Get Help */}
             <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center">
-              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">Get Help</h4>
+              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">
+                Get Help
+              </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-[#A2A2A2]">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/faq")}>FAQs</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/contact")}>Contact Support 24/7</li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/faq")}
+                >
+                  FAQs
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/contact")}
+                >
+                  Contact Support 24/7
+                </li>
               </ul>
             </div>
             {/* Follow Us */}
             <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center">
-              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">Follow US</h4>
+              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">
+                Follow US
+              </h4>
               <div className="space-y-1 md:space-y-2">
-                <h5 className="text-base md:text-lg font-bold text-[#0D69F2]">Stay in touch</h5>
-                <p className="text-xs sm:text-sm font-semibold text-[#A2A2A2]">Blog</p>
+                <h5 className="text-base md:text-lg font-bold text-[#0D69F2]">
+                  Stay in touch
+                </h5>
+                <p className="text-xs sm:text-sm font-semibold text-[#A2A2A2]">
+                  Blog
+                </p>
               </div>
             </div>
           </div>
