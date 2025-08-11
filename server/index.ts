@@ -105,6 +105,14 @@ import {
   handleWebhookHealth
 } from "./routes/stripe-webhooks";
 
+// Import email verification routes
+import {
+  handleSendVerificationEmail,
+  handleVerifyEmail,
+  handleCheckVerificationStatus,
+  handleResendVerificationEmail
+} from "./routes/email-verification";
+
 export function createServer() {
   const app = express();
 
@@ -196,6 +204,12 @@ export function createServer() {
   // Stripe webhook routes (no authentication required)
   app.post("/api/webhooks/stripe", handleStripeWebhook);
   app.get("/api/webhooks/stripe/health", handleWebhookHealth);
+
+  // Email verification routes (public)
+  app.post("/api/auth/send-verification", handleSendVerificationEmail);
+  app.get("/api/auth/verify-email", handleVerifyEmail);
+  app.get("/api/auth/verification-status", handleCheckVerificationStatus);
+  app.post("/api/auth/resend-verification", handleResendVerificationEmail);
 
   // Admin routes (with authentication)
   app.get("/api/admin/stats", authMiddleware, handleGetAdminStats);
