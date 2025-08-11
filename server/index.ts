@@ -99,11 +99,21 @@ import {
   handleAmadeusHealthCheck
 } from "./routes/amadeus";
 
+// Import Stripe webhook routes
+import {
+  handleStripeWebhook,
+  handleWebhookHealth
+} from "./routes/stripe-webhooks";
+
 export function createServer() {
   const app = express();
 
   // Middleware
   app.use(cors());
+
+  // Stripe webhook needs raw body, so add it before express.json()
+  app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
+
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
@@ -182,6 +192,10 @@ export function createServer() {
   app.get("/api/amadeus/airlines/:airlineCode", handleGetAirline);
   app.get("/api/amadeus/destinations/popular", handleGetPopularDestinations);
   app.get("/api/amadeus/health", handleAmadeusHealthCheck);
+
+  // Stripe webhook routes (no authentication required)
+  app.post("/api/webhooks/stripe", handleStripeWebhook);
+  app.get("/api/webhooks/stripe/health", handleWebhookHealth);
 
   // Admin routes (with authentication)
   app.get("/api/admin/stats", authMiddleware, handleGetAdminStats);
