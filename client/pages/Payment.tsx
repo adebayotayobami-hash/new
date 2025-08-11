@@ -18,6 +18,7 @@ export default function Payment() {
   const [bookingData, setBookingData] = useState<any>(null);
   const [passengerData, setPassengerData] = useState<any>(null);
   const [routeData, setRouteData] = useState<any>(null);
+  const [selectedFlight, setSelectedFlight] = useState<any>(null);
   const [paypalLoading, setPaypalLoading] = useState(false);
 
   const [paymentDetails, setPaymentDetails] = useState({
@@ -109,6 +110,18 @@ export default function Payment() {
       }
     }
 
+    // Load selected flight data
+    const savedFlight = localStorage.getItem('selectedFlight');
+    if (savedFlight) {
+      try {
+        const flight = JSON.parse(savedFlight);
+        setSelectedFlight(flight);
+        console.log('Loaded selected flight for payment:', flight);
+      } catch (error) {
+        console.error('Error parsing selected flight data:', error);
+      }
+    }
+
     // If user is logged in, pre-fill cardholder name
     if (user) {
       setPaymentDetails(prev => ({
@@ -164,7 +177,29 @@ export default function Payment() {
 
   const calculateTotal = () => {
     const passengerCount = passengerData?.passengers?.length || 1;
-    return passengerCount * 10; // $10 per passenger
+
+    // Use selected flight pricing if available
+    if (selectedFlight && selectedFlight.price) {
+      const flightPrice = parseFloat(selectedFlight.price.total);
+      return flightPrice * passengerCount;
+    }
+
+    // Fallback to $10 per passenger
+    return passengerCount * 10;
+  };
+
+  const getBasePrice = () => {
+    if (selectedFlight && selectedFlight.price) {
+      return parseFloat(selectedFlight.price.total);
+    }
+    return 10; // Fallback price
+  };
+
+  const getCurrency = () => {
+    if (selectedFlight && selectedFlight.price) {
+      return selectedFlight.price.currency;
+    }
+    return 'USD'; // Fallback currency
   };
 
   const createBookingForStripe = async () => {
