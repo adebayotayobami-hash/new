@@ -105,7 +105,7 @@ export default function Faq() {
     // Pricing & Payments
     {
       q: "How much does the service cost?",
-      a: "The service has a base fee, and the final price may vary depending on additional options or the number of passengers. The price will be clearly displayed before you pay.",
+      a: "The service costs $15 per passenger. The final price may vary depending on additional options or the number of passengers. The price will be clearly displayed before you pay.",
     },
     {
       q: "What payment methods are accepted?",

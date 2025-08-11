@@ -1,7 +1,10 @@
-import { useState } from "react";
-import { ArrowRight, Plane, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowRight, Plane, ChevronDown, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "../components/DatePicker";
+import { useFormValidation, CommonValidationRules } from "../hooks/useFormValidation";
+import { Airport, FlightRoute } from "@shared/api";
+import { supabaseHelpers } from "../lib/supabaseClient";
 
 interface RouteProps {
   onNext: () => void;
@@ -9,13 +12,266 @@ interface RouteProps {
   onNavigate: (step: any) => void;
 }
 
+// Default airports (fallback if API fails)
+const defaultAirports: Airport[] = [
+  { code: "RFD", name: "Chicago Rockford International Airport", city: "Chicago", country: "USA" },
+  { code: "ORY", name: "Paris Orly Airport", city: "Paris", country: "France" },
+  { code: "LHR", name: "London Heathrow Airport", city: "London", country: "UK" },
+  { code: "JFK", name: "John F. Kennedy International Airport", city: "New York", country: "USA" },
+  { code: "LAX", name: "Los Angeles International Airport", city: "Los Angeles", country: "USA" },
+  { code: "DXB", name: "Dubai International Airport", city: "Dubai", country: "UAE" },
+  { code: "SIN", name: "Singapore Changi Airport", city: "Singapore", country: "Singapore" },
+  { code: "NRT", name: "Narita International Airport", city: "Tokyo", country: "Japan" },
+  { code: "FRA", name: "Frankfurt Airport", city: "Frankfurt", country: "Germany" },
+  { code: "AMS", name: "Amsterdam Airport Schiphol", city: "Amsterdam", country: "Netherlands" },
+  { code: "CDG", name: "Charles de Gaulle Airport", city: "Paris", country: "France" },
+  { code: "MIA", name: "Miami International Airport", city: "Miami", country: "USA" },
+  { code: "BOS", name: "Logan International Airport", city: "Boston", country: "USA" },
+  { code: "ATL", name: "Hartsfield-Jackson Atlanta International Airport", city: "Atlanta", country: "USA" },
+  { code: "ORD", name: "Chicago O'Hare International Airport", city: "Chicago", country: "USA" },
+  { code: "DEN", name: "Denver International Airport", city: "Denver", country: "USA" },
+  { code: "SEA", name: "Seattle-Tacoma International Airport", city: "Seattle", country: "USA" },
+  { code: "SFO", name: "San Francisco International Airport", city: "San Francisco", country: "USA" },
+  { code: "LAS", name: "Harry Reid International Airport", city: "Las Vegas", country: "USA" },
+  { code: "YYZ", name: "Toronto Pearson International Airport", city: "Toronto", country: "Canada" },
+  { code: "SYD", name: "Sydney Kingsford Smith Airport", city: "Sydney", country: "Australia" }
+];
+
 export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
   const navigate = useNavigate();
   const [tripType, setTripType] = useState<"oneway" | "roundtrip">("oneway");
   const [fromLocation, setFromLocation] = useState("");
   const [toLocation, setToLocation] = useState("");
-  const [departureDate, setDepartureDate] = useState("01/05/2026");
-  const [returnDate, setReturnDate] = useState("01/05/2026");
+  const [departureDate, setDepartureDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [searchingFlights, setSearchingFlights] = useState(false);
+  const [airports, setAirports] = useState<Airport[]>(defaultAirports);
+  const [loadingAirports, setLoadingAirports] = useState(true);
+
+  // Form validation
+  const validationRules = {
+    fromLocation: [
+      { required: true, message: 'Please select a departure airport' }
+    ],
+    toLocation: [
+      { required: true, message: 'Please select a destination airport' },
+      {
+        custom: (value: string) => value !== fromLocation,
+        message: 'Destination must be different from departure'
+      }
+    ],
+    departureDate: CommonValidationRules.date,
+    ...(tripType === "roundtrip" && {
+      returnDate: [
+        ...CommonValidationRules.date,
+        {
+          custom: (value: string) => {
+            if (!value || !departureDate) return true;
+            return new Date(value) > new Date(departureDate);
+          },
+          message: 'Return date must be after departure date'
+        }
+      ]
+    })
+  };
+
+  const {
+    validateForm,
+    validateSingleField,
+    setFieldTouched,
+    getFieldError,
+    hasFieldError,
+    clearFieldError,
+  } = useFormValidation(validationRules);
+
+  // Load airports from API and restore form data
+  useEffect(() => {
+    const loadAirports = async () => {
+      try {
+        setLoadingAirports(true);
+        const { data, error } = await supabaseHelpers.getAirports();
+        if (!error && data && data.length > 0) {
+          setAirports(data);
+        }
+      } catch (error) {
+        console.log('Using default airports due to API error:', error);
+        // Keep default airports
+      } finally {
+        setLoadingAirports(false);
+      }
+    };
+
+    const restoreFormData = () => {
+      try {
+        const savedRoute = localStorage.getItem('bookingRoute');
+        if (savedRoute) {
+          const routeData = JSON.parse(savedRoute);
+          setTripType(routeData.tripType || 'oneway');
+          setFromLocation(routeData.from?.code || '');
+          setToLocation(routeData.to?.code || '');
+          setDepartureDate(routeData.departureDate || '');
+          setReturnDate(routeData.returnDate || '');
+        }
+      } catch (error) {
+        console.log('Error restoring form data:', error);
+      }
+    };
+
+    const setDefaultDates = () => {
+      // Only set default dates if no saved data
+      const savedRoute = localStorage.getItem('bookingRoute');
+      if (!savedRoute) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const defaultDate = tomorrow.toISOString().split('T')[0];
+        setDepartureDate(defaultDate);
+
+        if (tripType === "roundtrip") {
+          const weekLater = new Date();
+          weekLater.setDate(weekLater.getDate() + 8);
+          setReturnDate(weekLater.toISOString().split('T')[0]);
+        }
+      }
+    };
+
+    loadAirports();
+    restoreFormData();
+    setDefaultDates();
+  }, []);
+
+  // Update return date when trip type changes
+  useEffect(() => {
+    if (tripType === "roundtrip" && !returnDate && departureDate) {
+      const depDate = new Date(departureDate);
+      depDate.setDate(depDate.getDate() + 7);
+      setReturnDate(depDate.toISOString().split('T')[0]);
+    }
+  }, [tripType, departureDate]);
+
+  // Save form data to localStorage whenever it changes
+  useEffect(() => {
+    if (fromLocation || toLocation || departureDate || returnDate) {
+      const fromAirport = airports.find(a => a.code === fromLocation);
+      const toAirport = airports.find(a => a.code === toLocation);
+
+      const routeData: FlightRoute = {
+        from: fromAirport || { code: fromLocation, name: '', city: '', country: '' },
+        to: toAirport || { code: toLocation, name: '', city: '', country: '' },
+        departureDate,
+        returnDate: tripType === 'roundtrip' ? returnDate : undefined,
+        tripType
+      };
+
+      localStorage.setItem('bookingRoute', JSON.stringify(routeData));
+    }
+  }, [fromLocation, toLocation, departureDate, returnDate, tripType, airports]);
+
+  const handleLocationChange = (field: 'fromLocation' | 'toLocation', value: string) => {
+    if (field === 'fromLocation') {
+      setFromLocation(value);
+      // If destination is same as new departure, clear it
+      if (toLocation === value) {
+        setToLocation("");
+      }
+    } else {
+      setToLocation(value);
+    }
+
+    clearFieldError(field);
+    setFieldTouched(field, true);
+
+    // Validate on change
+    setTimeout(() => {
+      validateSingleField(field, value);
+    }, 100);
+  };
+
+  const handleDateChange = (field: 'departureDate' | 'returnDate', value: string) => {
+    if (field === 'departureDate') {
+      setDepartureDate(value);
+      // If return date is before new departure date, adjust it
+      if (tripType === "roundtrip" && returnDate && new Date(value) >= new Date(returnDate)) {
+        const newReturnDate = new Date(value);
+        newReturnDate.setDate(newReturnDate.getDate() + 1);
+        setReturnDate(newReturnDate.toISOString().split('T')[0]);
+      }
+    } else {
+      setReturnDate(value);
+    }
+
+    clearFieldError(field);
+    setFieldTouched(field, true);
+
+    // Validate on change
+    setTimeout(() => {
+      validateSingleField(field, value);
+    }, 100);
+  };
+
+  const handleNext = async () => {
+    const formData = {
+      fromLocation,
+      toLocation,
+      departureDate,
+      ...(tripType === "roundtrip" && { returnDate })
+    };
+
+    // Set all fields as touched for validation display
+    Object.keys(formData).forEach(field => {
+      setFieldTouched(field, true);
+    });
+
+    const isValid = validateForm(formData);
+
+    if (!isValid) {
+      return;
+    }
+
+    // Check that we have valid airports
+    const fromAirport = airports.find(a => a.code === fromLocation);
+    const toAirport = airports.find(a => a.code === toLocation);
+
+    if (!fromAirport || !toAirport) {
+      console.error('Invalid airport selection');
+      return;
+    }
+
+    setLoading(true);
+    setSearchingFlights(true);
+
+    try {
+      // Simulate API call to search for flights
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Store complete route data in localStorage for persistence across steps
+      const routeData: FlightRoute = {
+        tripType,
+        from: fromAirport,
+        to: toAirport,
+        departureDate,
+        returnDate: tripType === "roundtrip" ? returnDate : undefined,
+      };
+
+      // Save to both keys for compatibility
+      localStorage.setItem('selectedRoute', JSON.stringify(routeData));
+      localStorage.setItem('bookingRoute', JSON.stringify(routeData));
+
+      console.log('Route data saved:', routeData);
+      onNext();
+    } catch (error) {
+      console.error('Error processing route:', error);
+      // Still allow progression for demo purposes
+      onNext();
+    } finally {
+      setLoading(false);
+      setSearchingFlights(false);
+    }
+  };
+
+  const getSelectedAirport = (code: string): Airport | undefined => {
+    return airports.find(airport => airport.code === code);
+  };
 
   return (
     <div className="min-h-screen bg-ticket-primary text-white">
@@ -99,35 +355,61 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
             <div>
               <h3 className="text-2xl font-bold mb-6 text-[#F6F6FF]">Route</h3>
               
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex-1 relative">
-                  <select
-                    value={fromLocation}
-                    onChange={(e) => setFromLocation(e.target.value)}
-                    className="w-full bg-white border border-gray-300 rounded p-4 text-gray-600 appearance-none pr-10"
-                  >
-                    <option value="">From</option>
-                    <option value="chicago">Chicago Rockford (RFD)</option>
-                    <option value="paris">Paris Orly (ORY)</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-600 pointer-events-none" />
-                </div>
-                
-                <div className="bg-ticket-secondary rounded p-2">
-                  <Plane className="w-4 h-4 text-white" />
-                </div>
-                
-                <div className="flex-1 relative">
-                  <select
-                    value={toLocation}
-                    onChange={(e) => setToLocation(e.target.value)}
-                    className="w-full bg-white border border-gray-300 rounded p-4 text-gray-600 appearance-none pr-10"
-                  >
-                    <option value="">To</option>
-                    <option value="paris">Paris Orly (ORY)</option>
-                    <option value="chicago">Chicago Rockford (RFD)</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-600 pointer-events-none" />
+              <div className="space-y-4 mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 relative">
+                    <select
+                      value={fromLocation}
+                      onChange={(e) => handleLocationChange('fromLocation', e.target.value)}
+                      onBlur={() => setFieldTouched('fromLocation', true)}
+                      className={`w-full bg-white border rounded p-4 text-gray-600 appearance-none pr-10 ${
+                        hasFieldError('fromLocation') ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select departure airport</option>
+                      {airports.map(airport => (
+                        <option key={airport.code} value={airport.code}>
+                          {airport.city} ({airport.code}) - {airport.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-600 pointer-events-none" />
+                    {hasFieldError('fromLocation') && (
+                      <div className="flex items-center gap-1 mt-1 text-red-400 text-sm">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{getFieldError('fromLocation')}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-ticket-secondary rounded p-2">
+                    <Plane className="w-4 h-4 text-white" />
+                  </div>
+
+                  <div className="flex-1 relative">
+                    <select
+                      value={toLocation}
+                      onChange={(e) => handleLocationChange('toLocation', e.target.value)}
+                      onBlur={() => setFieldTouched('toLocation', true)}
+                      className={`w-full bg-white border rounded p-4 text-gray-600 appearance-none pr-10 ${
+                        hasFieldError('toLocation') ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select destination airport</option>
+                      {airports.filter(airport => airport.code !== fromLocation).map(airport => (
+                        <option key={airport.code} value={airport.code}>
+                          {airport.city} ({airport.code}) - {airport.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-600 pointer-events-none" />
+                    {hasFieldError('toLocation') && (
+                      <div className="flex items-center gap-1 mt-1 text-red-400 text-sm">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{getFieldError('toLocation')}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -136,43 +418,94 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
             <div>
               <h3 className="text-2xl font-bold mb-6 text-[#F6F6FF]">Date</h3>
               
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <DatePicker
-                    value={departureDate}
-                    onChange={setDepartureDate}
-                    placeholder="Departure Date"
-                  />
-                </div>
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="flex-1 space-y-2">
+                    <label className="block text-sm font-semibold text-[#F6F6FF]">
+                      Departure Date
+                    </label>
+                    <input
+                      type="date"
+                      value={departureDate}
+                      onChange={(e) => handleDateChange('departureDate', e.target.value)}
+                      onBlur={() => setFieldTouched('departureDate', true)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className={`w-full bg-white border rounded p-4 text-gray-600 ${
+                        hasFieldError('departureDate') ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {hasFieldError('departureDate') && (
+                      <div className="flex items-center gap-1 text-red-400 text-sm">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{getFieldError('departureDate')}</span>
+                      </div>
+                    )}
+                  </div>
 
-                {tripType === "roundtrip" && (
-                  <>
-                    <div className="bg-ticket-secondary rounded p-2 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" viewBox="0 0 19 15" fill="currentColor">
-                        <path d="M19 4.14235V15.0009H8.12981C7.78726 14.8159 7.65846 14.5352 7.6813 14.1517C7.70596 13.7347 7.68587 13.3142 7.68678 12.8963C7.68861 12.215 7.85394 12.0525 8.54817 12.0516C10.6948 12.0507 12.8405 12.0534 14.9872 12.0498C15.6924 12.0489 15.9874 11.7601 15.9901 11.0697C15.9947 9.93352 15.992 8.7973 15.9911 7.66019C15.9911 6.74057 15.7353 6.48788 14.7999 6.48697C12.1518 6.48607 9.50274 6.48697 6.85462 6.48697C6.70846 6.48697 6.56231 6.48697 6.38053 6.48697C6.38053 7.47338 6.39058 8.39841 6.37231 9.32345C6.36774 9.52921 6.26178 9.73317 6.2024 9.93713C6.00692 9.84688 5.78221 9.79183 5.6187 9.66187C3.89957 8.30275 2.18774 6.9355 0.480481 5.56194C0.297788 5.41484 0.158942 5.21449 0 5.03941C0 4.97984 0 4.91938 0 4.85982C0.176298 4.68022 0.338894 4.48439 0.531635 4.32284C0.97101 3.95554 1.425 3.60448 1.87351 3.2471C3.14687 2.23001 4.41659 1.20931 5.69909 0.203056C5.83793 0.0938572 6.04163 0.0658805 6.21519 0C6.27 0.175982 6.36683 0.351062 6.37322 0.528849C6.3924 1.15517 6.38053 1.78238 6.38053 2.4096C6.38053 2.79225 6.38053 3.174 6.38053 3.59274C6.62351 3.59274 6.80346 3.59274 6.98341 3.59274C10.7067 3.59274 14.4309 3.59726 18.1541 3.58643C18.5926 3.58552 18.8822 3.71638 19 4.14235Z"/>
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <DatePicker
-                        value={returnDate}
-                        onChange={setReturnDate}
-                        placeholder="Return Date"
-                      />
-                    </div>
-                  </>
-                )}
+                  {tripType === "roundtrip" && (
+                    <>
+                      <div className="bg-ticket-secondary rounded p-2 flex items-center justify-center mt-8">
+                        <svg className="w-4 h-4 text-white" viewBox="0 0 19 15" fill="currentColor">
+                          <path d="M19 4.14235V15.0009H8.12981C7.78726 14.8159 7.65846 14.5352 7.6813 14.1517C7.70596 13.7347 7.68587 13.3142 7.68678 12.8963C7.68861 12.215 7.85394 12.0525 8.54817 12.0516C10.6948 12.0507 12.8405 12.0534 14.9872 12.0498C15.6924 12.0489 15.9874 11.7601 15.9901 11.0697C15.9947 9.93352 15.992 8.7973 15.9911 7.66019C15.9911 6.74057 15.7353 6.48788 14.7999 6.48697C12.1518 6.48607 9.50274 6.48697 6.85462 6.48697C6.70846 6.48697 6.56231 6.48697 6.38053 6.48697C6.38053 7.47338 6.39058 8.39841 6.37231 9.32345C6.36774 9.52921 6.26178 9.73317 6.2024 9.93713C6.00692 9.84688 5.78221 9.79183 5.6187 9.66187C3.89957 8.30275 2.18774 6.9355 0.480481 5.56194C0.297788 5.41484 0.158942 5.21449 0 5.03941C0 4.97984 0 4.91938 0 4.85982C0.176298 4.68022 0.338894 4.48439 0.531635 4.32284C0.97101 3.95554 1.425 3.60448 1.87351 3.2471C3.14687 2.23001 4.41659 1.20931 5.69909 0.203056C5.83793 0.0938572 6.04163 0.0658805 6.21519 0C6.27 0.175982 6.36683 0.351062 6.37322 0.528849C6.3924 1.15517 6.38053 1.78238 6.38053 2.4096C6.38053 2.79225 6.38053 3.174 6.38053 3.59274C6.62351 3.59274 6.80346 3.59274 6.98341 3.59274C10.7067 3.59274 14.4309 3.59726 18.1541 3.58643C18.5926 3.58552 18.8822 3.71638 19 4.14235Z"/>
+                        </svg>
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <label className="block text-sm font-semibold text-[#F6F6FF]">
+                          Return Date
+                        </label>
+                        <input
+                          type="date"
+                          value={returnDate}
+                          onChange={(e) => handleDateChange('returnDate', e.target.value)}
+                          onBlur={() => setFieldTouched('returnDate', true)}
+                          min={departureDate || new Date().toISOString().split('T')[0]}
+                          className={`w-full bg-white border rounded p-4 text-gray-600 ${
+                            hasFieldError('returnDate') ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                        />
+                        {hasFieldError('returnDate') && (
+                          <div className="flex items-center gap-1 text-red-400 text-sm">
+                            <AlertCircle className="w-4 h-4" />
+                            <span>{getFieldError('returnDate')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Navigation Button */}
             <div className="flex justify-start">
               <button
-                onClick={onNext}
-                className="bg-ticket-accent rounded-full w-19 h-10 flex items-center justify-center hover:bg-opacity-80 transition-colors"
+                onClick={handleNext}
+                disabled={loading}
+                className={`rounded-full w-20 h-12 flex items-center justify-center transition-colors ${
+                  loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-ticket-accent hover:bg-opacity-80"
+                }`}
               >
-                <ArrowRight className="w-6 h-6 text-black" />
+                {loading ? (
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black"></div>
+                ) : (
+                  <ArrowRight className="w-6 h-6 text-black" />
+                )}
               </button>
             </div>
+
+            {/* Flight Search Status */}
+            {searchingFlights && (
+              <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 mt-6">
+                <div className="flex items-center gap-3">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span className="text-white font-medium">
+                    Searching for available flights...
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Side - Ticket Preview */}
@@ -187,17 +520,38 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
               <div className="text-center mb-6">
                 <div className="flex items-center justify-center gap-4 mb-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-black">(RFD)</div>
-                    <div className="text-xs font-semibold text-ticket-gray">Chicago Rockford</div>
-                    <div className="text-xs text-ticket-gray-light">20/05/205</div>
+                    <div className="text-3xl font-bold text-black">
+                      ({fromLocation || "RFD"})
+                    </div>
+                    <div className="text-xs font-semibold text-ticket-gray">
+                      {getSelectedAirport(fromLocation)?.city || "Chicago Rockford"}
+                    </div>
+                    <div className="text-xs text-ticket-gray-light">
+                      {departureDate ? new Date(departureDate).toLocaleDateString() : "20/05/2025"}
+                    </div>
                   </div>
                   <ArrowRight className="w-8 h-8 text-black" />
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-black">(ORY)</div>
-                    <div className="text-xs font-semibold text-ticket-gray">Paris Orly</div>
-                    <div className="text-xs text-ticket-gray-light">30/05/205</div>
+                    <div className="text-3xl font-bold text-black">
+                      ({toLocation || "ORY"})
+                    </div>
+                    <div className="text-xs font-semibold text-ticket-gray">
+                      {getSelectedAirport(toLocation)?.city || "Paris Orly"}
+                    </div>
+                    <div className="text-xs text-ticket-gray-light">
+                      {tripType === "roundtrip" && returnDate
+                        ? new Date(returnDate).toLocaleDateString()
+                        : "30/05/2025"}
+                    </div>
                   </div>
                 </div>
+                {tripType === "roundtrip" && (
+                  <div className="text-xs text-ticket-gray-light">
+                    Round trip • {departureDate && returnDate
+                      ? `${Math.ceil((new Date(returnDate).getTime() - new Date(departureDate).getTime()) / (1000 * 60 * 60 * 24))} days`
+                      : "Duration TBD"}
+                  </div>
+                )}
               </div>
 
               {/* Passenger Info */}

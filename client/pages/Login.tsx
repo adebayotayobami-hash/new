@@ -1,0 +1,233 @@
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { LoginRequest } from "@shared/api";
+
+export default function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  
+  const [formData, setFormData] = useState<LoginRequest>({
+    email: "",
+    password: "",
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    // Clear error when user starts typing
+    if (error) setError("");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.email || !formData.password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await login(formData);
+      
+      if (response.success) {
+        navigate("/dashboard");
+      } else {
+        setError(response.message || "Login failed. Please try again.");
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#E7E9FF] font-jakarta">
+      {/* Header */}
+      <header className="container mx-auto px-4 md:px-12 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
+            <img
+              src="/onboard/result.png"
+              alt="OnboardTicket Logo"
+              className="h-14 md:h-24 w-auto max-w-[220px] md:max-w-[320px] object-contain cursor-pointer"
+              loading="eager"
+            />
+          </div>
+          <div className="hidden md:flex items-center gap-4">
+            <Link 
+              to="/register"
+              className="px-8 py-2 text-brand-text-primary font-bold text-lg hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Sign Up
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 md:px-12 py-8 md:py-16">
+        <div className="max-w-md mx-auto">
+          <div className="bg-white/90 backdrop-blur-md rounded-[24px] p-8 md:p-12 shadow-xl border border-[#E7E9FF]">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-[#3839C9] mb-4">
+                Welcome Back
+              </h1>
+              <p className="text-lg text-[#637996] mb-6">
+                Sign in to your account to manage your bookings
+              </p>
+            </div>
+
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-700 text-sm font-medium">{error}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Email Field */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-semibold text-[#637996] mb-2">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#637996]" />
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Enter your email"
+                    className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-lg text-[#20242A] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3839C9] focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-semibold text-[#637996] mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#637996]" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="Enter your password"
+                    className="w-full pl-12 pr-12 py-4 border border-gray-300 rounded-lg text-[#20242A] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3839C9] focus:border-transparent"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#637996] hover:text-[#3839C9]"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full py-4 rounded-xl font-semibold text-lg transition-colors shadow-lg ${
+                  loading
+                    ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                    : "bg-[#3839C9] text-white hover:bg-blue-700"
+                }`}
+              >
+                {loading ? "Signing In..." : "Sign In"}
+              </button>
+            </form>
+
+            {/* Forgot Password & Sign Up Links */}
+            <div className="mt-8 text-center space-y-4">
+              <Link 
+                to="/forgot-password" 
+                className="text-[#3839C9] hover:text-blue-700 font-medium"
+              >
+                Forgot your password?
+              </Link>
+              
+              <div className="text-[#637996]">
+                Don't have an account?{" "}
+                <Link 
+                  to="/register" 
+                  className="text-[#3839C9] hover:text-blue-700 font-semibold"
+                >
+                  Sign up here
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="mt-24 px-4 sm:px-8 lg:px-36">
+        <div className="bg-ticket-footer rounded-t-lg p-8 lg:p-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-left">
+            {/* Logo and Copyright */}
+            <div className="space-y-2 md:space-y-4 flex flex-col items-start">
+              <img
+                src="/onboard/logos-01.png"
+                alt="OnboardTicket Footer Logo"
+                className="h-14 md:h-24 w-auto max-w-[220px] md:max-w-[320px] object-contain cursor-pointer"
+                loading="lazy"
+                onClick={() => navigate("/")}
+              />
+              <hr className="border-black w-32 sm:w-40 md:w-72" />
+              <h4 className="font-semibold text-black text-xs sm:text-sm md:text-base">
+                Onboardticket.com
+              </h4>
+              <p className="text-[10px] sm:text-xs font-semibold text-[#303850] opacity-50">
+                © 2025 — Copyright
+              </p>
+            </div>
+            {/* About */}
+            <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center">
+              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">About</h4>
+              <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-[#A2A2A2]">
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/about")}>Who We are ?</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/privacy-policy")}>Privacy Policy</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/terms-conditions")}>Terms & Conditions</li>
+              </ul>
+            </div>
+            {/* Get Help */}
+            <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center">
+              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">Get Help</h4>
+              <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-[#A2A2A2]">
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/faq")}>FAQs</li>
+                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/contact")}>Contact Support 24/7</li>
+              </ul>
+            </div>
+            {/* Follow Us */}
+            <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center">
+              <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">Follow US</h4>
+              <div className="space-y-1 md:space-y-2">
+                <h5 className="text-base md:text-lg font-bold text-[#0D69F2]">Stay in touch</h5>
+                <p className="text-xs sm:text-sm font-semibold text-[#A2A2A2]">Blog</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -1,0 +1,250 @@
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '../../client/lib/supabaseClient';
+
+// Server-side Supabase client with service role key for admin operations
+const supabaseUrl = process.env.SUPABASE_URL || 'http://localhost:54321';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'your-service-role-key';
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
+
+// Helper functions for server-side operations
+export const supabaseServerHelpers = {
+  // User operations
+  async createUser(userData: Database['public']['Tables']['users']['Insert']) {
+    return await supabase
+      .from('users')
+      .insert(userData)
+      .select()
+      .single();
+  },
+
+  async getUserById(id: string) {
+    return await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+  },
+
+  async getUserByEmail(email: string) {
+    return await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+  },
+
+  // Booking operations
+  async createBooking(bookingData: Database['public']['Tables']['bookings']['Insert']) {
+    return await supabase
+      .from('bookings')
+      .insert(bookingData)
+      .select(`
+        *,
+        from_airport:airports!from_airport_id(*),
+        to_airport:airports!to_airport_id(*),
+        passengers(*)
+      `)
+      .single();
+  },
+
+  async addPassengers(passengers: Database['public']['Tables']['passengers']['Insert'][]) {
+    return await supabase
+      .from('passengers')
+      .insert(passengers)
+      .select();
+  },
+
+  async getUserBookings(userId: string) {
+    return await supabase
+      .from('booking_summary')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+  },
+
+  async getBookingById(id: string) {
+    return await supabase
+      .from('bookings')
+      .select(`
+        *,
+        from_airport:airports!from_airport_id(*),
+        to_airport:airports!to_airport_id(*),
+        passengers(*),
+        transactions(*)
+      `)
+      .eq('id', id)
+      .single();
+  },
+
+  async updateBookingStatus(id: string, status: Database['public']['Tables']['bookings']['Row']['status']) {
+    return await supabase
+      .from('bookings')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+  },
+
+  // Airport operations
+  async getAllAirports() {
+    return await supabase
+      .from('airports')
+      .select('*')
+      .order('city');
+  },
+
+  async getAirportByCode(code: string) {
+    return await supabase
+      .from('airports')
+      .select('*')
+      .eq('code', code)
+      .single();
+  },
+
+  // Transaction operations
+  async createTransaction(transactionData: Database['public']['Tables']['transactions']['Insert']) {
+    return await supabase
+      .from('transactions')
+      .insert(transactionData)
+      .select()
+      .single();
+  },
+
+  async updateTransactionStatus(
+    id: string, 
+    status: Database['public']['Tables']['transactions']['Row']['status'],
+    paymentDetails?: any
+  ) {
+    const updateData: any = { 
+      status, 
+      updated_at: new Date().toISOString() 
+    };
+    
+    if (paymentDetails) {
+      updateData.payment_details = paymentDetails;
+    }
+
+    return await supabase
+      .from('transactions')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+  },
+
+  async getUserTransactions(userId: string) {
+    return await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+  },
+
+  // Support ticket operations
+  async createSupportTicket(ticketData: Database['public']['Tables']['support_tickets']['Insert']) {
+    return await supabase
+      .from('support_tickets')
+      .insert(ticketData)
+      .select()
+      .single();
+  },
+
+  async getUserSupportTickets(userId: string) {
+    return await supabase
+      .from('support_tickets')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+  },
+
+  async updateSupportTicketStatus(
+    id: string, 
+    status: Database['public']['Tables']['support_tickets']['Row']['status'],
+    adminResponse?: string
+  ) {
+    const updateData: any = { 
+      status, 
+      updated_at: new Date().toISOString() 
+    };
+    
+    if (adminResponse) {
+      updateData.admin_response = adminResponse;
+    }
+    
+    if (status === 'resolved') {
+      updateData.resolved_at = new Date().toISOString();
+    }
+
+    return await supabase
+      .from('support_tickets')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+  },
+
+  // Admin operations
+  async getAdminStats() {
+    return await supabase
+      .from('admin_dashboard_stats')
+      .select('*')
+      .single();
+  },
+
+  async getAllBookingsAdmin(page = 1, limit = 10, status?: string) {
+    let query = supabase
+      .from('booking_summary')
+      .select('*', { count: 'exact' });
+
+    if (status && status !== 'all') {
+      query = query.eq('status', status);
+    }
+
+    return await query
+      .order('created_at', { ascending: false })
+      .range((page - 1) * limit, page * limit - 1);
+  },
+
+  async getAllTransactionsAdmin() {
+    return await supabase
+      .from('transactions')
+      .select(`
+        *,
+        booking:bookings(pnr, total_amount),
+        user:users(first_name, last_name, email)
+      `)
+      .order('created_at', { ascending: false });
+  },
+
+  async getAllSupportTicketsAdmin() {
+    return await supabase
+      .from('support_tickets')
+      .select(`
+        *,
+        user:users(first_name, last_name, email)
+      `)
+      .order('created_at', { ascending: false });
+  },
+
+  // Check if user is admin
+  async isUserAdmin(userId: string) {
+    const { data, error } = await supabase.rpc('is_admin', {}, {
+      headers: {
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+      }
+    });
+    
+    return !error && data === true;
+  },
+
+  // Utility functions
+  async cleanupExpiredBookings() {
+    return await supabase.rpc('cleanup_expired_bookings');
+  }
+};

@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { ArrowRight, Mail, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowRight, Mail, Check, Plane, MapPin, Calendar, Users, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { FlightRoute, Passenger, BookingRequest } from "@shared/api";
 
 interface ConfirmationProps {
   onNext: () => void;
@@ -9,9 +11,129 @@ interface ConfirmationProps {
   onNavigate: (step: any) => void;
 }
 
+interface BookingData {
+  route: FlightRoute | null;
+  passengers: Passenger[];
+  contactEmail: string;
+}
+
 export default function Confirmation({ onNext, onBack, currentStep, onNavigate }: ConfirmationProps) {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [bookingData, setBookingData] = useState<BookingData>({
+    route: null,
+    passengers: [],
+    contactEmail: ""
+  });
+
+  // Load saved booking data
+  useEffect(() => {
+    const loadBookingData = () => {
+      try {
+        // Load route data
+        const savedRoute = localStorage.getItem('selectedRoute') || localStorage.getItem('bookingRoute');
+        let route = null;
+        if (savedRoute) {
+          route = JSON.parse(savedRoute);
+        }
+
+        // Load passenger data
+        const savedPassengers = localStorage.getItem('bookingPassengers');
+        const savedContactEmail = localStorage.getItem('bookingContactEmail');
+        
+        let passengers: Passenger[] = [];
+        let contactEmail = "";
+
+        if (savedPassengers) {
+          passengers = JSON.parse(savedPassengers);
+        }
+
+        if (savedContactEmail) {
+          contactEmail = savedContactEmail;
+        }
+
+        setBookingData({
+          route,
+          passengers,
+          contactEmail
+        });
+
+        console.log('Loaded booking data:', { route, passengers, contactEmail });
+      } catch (error) {
+        console.error('Error loading booking data:', error);
+        setError('Error loading booking data. Please go back and try again.');
+      }
+    };
+
+    loadBookingData();
+  }, []);
+
+  // Calculate total amount ($15 per passenger)
+  const totalAmount = bookingData.passengers.length * 15;
+
+  // Handle booking creation
+  const handleCreateBooking = async () => {
+    if (!acceptTerms) {
+      setError('Please accept the terms and conditions to continue.');
+      return;
+    }
+
+    if (!bookingData.route || bookingData.passengers.length === 0) {
+      setError('Missing booking information. Please go back and complete all steps.');
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setError('Please log in to create a booking.');
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const bookingRequest: BookingRequest = {
+        route: bookingData.route,
+        passengers: bookingData.passengers,
+        contactEmail: bookingData.contactEmail,
+        termsAccepted: acceptTerms
+      };
+
+      console.log('Creating booking:', bookingRequest);
+
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify(bookingRequest)
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.booking) {
+        // Save booking ID for payment
+        localStorage.setItem('currentBookingId', result.booking.id);
+        localStorage.setItem('currentBooking', JSON.stringify(result.booking));
+        
+        console.log('Booking created successfully:', result.booking);
+        
+        // Navigate to payment
+        navigate('/payment');
+      } else {
+        setError(result.message || 'Failed to create booking. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      setError('Network error. Please check your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-ticket-primary text-white">
@@ -44,7 +166,7 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
               onClick={() => onNavigate("passengers")}
               className="text-2xl font-bold text-white/60 hover:text-white transition-colors"
             >
-              Passangers
+              Passengers
             </button>
           </div>
           <div className="flex items-center gap-4">
@@ -60,233 +182,185 @@ export default function Confirmation({ onNext, onBack, currentStep, onNavigate }
           </div>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <div className="mb-8 p-4 bg-red-500/20 border border-red-500/40 rounded-lg flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400" />
+            <span className="text-red-200">{error}</span>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
-          {/* Left Side - Form */}
+          {/* Left Side - Booking Details */}
           <div className="space-y-8">
-            {/* Passenger Information */}
-            <div>
-              <h2 className="text-2xl font-bold mb-8 text-[#F6F6FF]">Passanger</h2>
-              
-              <div className="bg-ticket-secondary rounded-lg p-6 space-y-4">
-                <div className="text-sm font-semibold text-white/55 mb-2">
-                  Passenger Contact
-                </div>
+            {/* Route Information */}
+            {bookingData.route && (
+              <div>
+                <h2 className="text-2xl font-bold mb-6 text-[#F6F6FF]">Flight Route</h2>
                 
-                <div className="grid grid-cols-4 gap-3">
-                  <div className="bg-[#606AFB] rounded-lg p-3 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-white/55">Mr</span>
+                <div className="bg-ticket-secondary rounded-lg p-6 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <MapPin className="w-5 h-5 text-white/60" />
+                    <div className="flex-1">
+                      <div className="text-lg font-semibold">
+                        {bookingData.route.from.city} ({bookingData.route.from.code}) → {bookingData.route.to.city} ({bookingData.route.to.code})
+                      </div>
+                      <div className="text-sm text-white/70">
+                        {bookingData.route.from.name} → {bookingData.route.to.name}
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-[#606AFB] rounded-lg p-3 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-white/55">First Name</span>
+                  
+                  <div className="flex items-center gap-4">
+                    <Calendar className="w-5 h-5 text-white/60" />
+                    <div>
+                      <div className="text-sm text-white/70">Departure</div>
+                      <div className="font-semibold">{new Date(bookingData.route.departureDate).toLocaleDateString()}</div>
+                    </div>
+                    {bookingData.route.returnDate && (
+                      <>
+                        <div className="text-white/40 mx-4">•</div>
+                        <div>
+                          <div className="text-sm text-white/70">Return</div>
+                          <div className="font-semibold">{new Date(bookingData.route.returnDate).toLocaleDateString()}</div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  <div className="bg-[#606AFB] rounded-lg p-3 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-white/55">Last Name</span>
+                  
+                  <div className="pt-2 border-t border-white/20">
+                    <span className="text-sm text-white/70">Trip Type: </span>
+                    <span className="font-semibold capitalize">{bookingData.route.tripType}</span>
                   </div>
-                  <div></div>
-                </div>
-                
-                <div className="bg-ticket-secondary rounded-lg p-4 flex items-center gap-3">
-                  <Mail className="w-6 h-6 text-white/60" />
-                  <span className="text-sm font-semibold text-white/55">Contact Email</span>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* Route Information */}
+            {/* Passenger Information */}
             <div>
-              <h2 className="text-2xl font-bold mb-8 text-[#F6F6FF]">Route</h2>
+              <h2 className="text-2xl font-bold mb-6 text-[#F6F6FF]">Passengers</h2>
               
-              <div className="bg-ticket-secondary rounded-lg p-6">
-                <div className="text-sm font-semibold text-white/55 mb-4">
-                  Passenger Contact
+              <div className="bg-ticket-secondary rounded-lg p-6 space-y-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <Users className="w-5 h-5 text-white/60" />
+                  <span className="text-lg font-semibold">{bookingData.passengers.length} Passenger{bookingData.passengers.length > 1 ? 's' : ''}</span>
                 </div>
                 
-                <div className="flex items-center gap-4">
-                  <div className="bg-[#606AFB] rounded-lg p-3 flex-1 text-center">
-                    <span className="text-sm font-semibold text-white">Chicago Rockford (RFD)</span>
+                {bookingData.passengers.map((passenger, index) => (
+                  <div key={index} className="bg-[#606AFB]/30 rounded-lg p-4">
+                    <div className="text-sm text-white/70 mb-2">Passenger {index + 1}</div>
+                    <div className="font-semibold">
+                      {passenger.title} {passenger.firstName} {passenger.lastName}
+                    </div>
+                    <div className="text-sm text-white/70">{passenger.email}</div>
                   </div>
-                  <div className="bg-[#606AFB] rounded p-2">
-                    <img 
-                      src="https://api.builder.io/api/v1/image/assets/TEMP/9cf21d37d08a31eabcbc3752b88f262a59322ba1?width=34" 
-                      alt="airplane" 
-                      className="w-4 h-4"
-                    />
+                ))}
+                
+                {bookingData.contactEmail && (
+                  <div className="pt-4 border-t border-white/20">
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-5 h-5 text-white/60" />
+                      <div>
+                        <div className="text-sm text-white/70">Contact Email</div>
+                        <div className="font-semibold">{bookingData.contactEmail}</div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-[#606AFB] rounded-lg p-3 flex-1 text-center">
-                    <span className="text-sm font-semibold text-white">Paris Orly (ORY)</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side - Pricing & Confirmation */}
+          <div className="space-y-8">
+            {/* Pricing Summary */}
+            <div className="bg-ticket-secondary rounded-lg p-6">
+              <h3 className="text-xl font-bold mb-4 text-[#F6F6FF]">Booking Summary</h3>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-white/70">Base price per passenger</span>
+                  <span className="font-semibold">$15.00</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/70">Number of passengers</span>
+                  <span className="font-semibold">{bookingData.passengers.length}</span>
+                </div>
+                <div className="pt-3 border-t border-white/20">
+                  <div className="flex justify-between text-lg">
+                    <span className="font-bold">Total Amount</span>
+                    <span className="font-bold text-ticket-accent">${totalAmount}.00</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Terms and Conditions */}
-            <div className="flex items-center gap-3">
-              <div 
-                className={`w-4 h-4 rounded border-2 flex items-center justify-center cursor-pointer transition-colors ${
-                  acceptTerms ? 'bg-white border-white' : 'bg-transparent border-white'
-                }`}
-                onClick={() => setAcceptTerms(!acceptTerms)}
-              >
-                {acceptTerms && <Check className="w-3 h-3 text-black" />}
+            <div className="bg-ticket-secondary rounded-lg p-6">
+              <h3 className="text-xl font-bold mb-4 text-[#F6F6FF]">Terms & Conditions</h3>
+              
+              <div className="space-y-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <div className="mt-1">
+                    <input
+                      type="checkbox"
+                      checked={acceptTerms}
+                      onChange={(e) => setAcceptTerms(e.target.checked)}
+                      className="w-5 h-5 rounded border-2 border-white/40 bg-transparent checked:bg-ticket-accent checked:border-ticket-accent focus:ring-2 focus:ring-ticket-accent/50"
+                    />
+                  </div>
+                  <div className="text-sm text-white/90">
+                    I accept the{' '}
+                    <button
+                      onClick={() => navigate('/terms-conditions')}
+                      className="text-ticket-accent hover:underline"
+                    >
+                      Terms & Conditions
+                    </button>{' '}
+                    and{' '}
+                    <button
+                      onClick={() => navigate('/privacy-policy')}
+                      className="text-ticket-accent hover:underline"
+                    >
+                      Privacy Policy
+                    </button>
+                    . I understand this is a flight reservation for visa purposes.
+                  </div>
+                </label>
               </div>
-              <span className="text-sm font-semibold text-white/55">
-                I accept the Terms and Conditions and the Privacy Policy
-              </span>
             </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex gap-4">
+            {/* Action Buttons */}
+            <div className="space-y-4">
+              <button
+                onClick={handleCreateBooking}
+                disabled={!acceptTerms || loading || !bookingData.route || bookingData.passengers.length === 0}
+                className="w-full bg-ticket-accent hover:bg-ticket-accent/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-3"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Creating Booking...
+                  </>
+                ) : (
+                  <>
+                    Create Booking & Pay
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
+              </button>
+              
               <button
                 onClick={onBack}
-                className="bg-ticket-light rounded-full px-8 py-3 flex items-center justify-center hover:bg-opacity-80 transition-colors"
+                disabled={loading}
+                className="w-full bg-transparent border-2 border-white/40 hover:border-white/60 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
               >
-                <span className="text-sm font-semibold text-[#F6F6FF]">Back</span>
+                Back to Passengers
               </button>
-              <button
-                onClick={onNext}
-                disabled={!acceptTerms}
-                className={`rounded-full px-8 py-3 flex items-center justify-center transition-colors ${
-                  acceptTerms 
-                    ? 'bg-ticket-accent text-black hover:bg-opacity-80' 
-                    : 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                }`}
-              >
-                <span className="text-sm font-semibold">Confirm</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Right Side - Ticket Preview */}
-          <div className="flex justify-center lg:justify-end">
-            <div className="bg-white rounded-lg p-8 shadow-2xl w-full max-w-sm">
-              {/* Ticket Header */}
-              <div className="bg-ticket-darker h-16 -mx-8 -mt-8 mb-6 flex items-center justify-center rounded-t-lg">
-                <ArrowRight className="w-8 h-8 text-black" />
-              </div>
-
-              {/* Route Information */}
-              <div className="text-center mb-6">
-                <div className="flex items-center justify-center gap-4 mb-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-black">(RFD)</div>
-                    <div className="text-xs font-semibold text-ticket-gray">Chicago Rockford</div>
-                    <div className="text-xs text-ticket-gray-light">20/05/205</div>
-                  </div>
-                  <ArrowRight className="w-8 h-8 text-black" />
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-black">(ORY)</div>
-                    <div className="text-xs font-semibold text-ticket-gray">Paris Orly</div>
-                    <div className="text-xs text-ticket-gray-light">30/05/205</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Passenger Info */}
-              <div className="mb-6">
-                <div className="text-sm font-semibold text-ticket-text mb-1">Passanger / 1</div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="text-ticket-text font-semibold">Passanger</div>
-                    <div className="font-bold">Mr.Lorem abc</div>
-                  </div>
-                  <div>
-                    <div className="text-ticket-text font-semibold">Flight</div>
-                    <div className="font-bold">$123CD</div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-sm mt-2">
-                  <div>
-                    <div className="text-ticket-text font-semibold">Seat</div>
-                    <div className="font-bold">20C</div>
-                  </div>
-                  <div>
-                    <div className="text-ticket-text font-semibold">Departure</div>
-                    <div className="font-bold">7:30 AM</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Barcode */}
-              <div className="flex justify-center">
-                <div className="flex gap-1">
-                  {[...Array(15)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className="w-1 bg-black" 
-                      style={{ 
-                        height: `${Math.random() * 20 + 10}px` 
-                      }}
-                    ></div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="mt-24 px-4 sm:px-8 lg:px-36">
-        <div className="bg-ticket-footer rounded-t-lg p-8 lg:p-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-left">
-            {/* Logo and Copyright */}
-            <div className="space-y-4">
-              <div>
-                <img 
-                  src="/onboard/result.png" 
-                  alt="OnboardTicket Logo" 
-                  className="w-40 h-10 mb-4 cursor-pointer"
-                  onClick={() => navigate("/")}
-                />
-                <hr className="border-white mb-4" />
-                <div className="text-base font-semibold text-white">Onboardticket.com</div>
-                <div className="text-xs opacity-80 mt-2 text-white">© 2025 — Copyright</div>
-              </div>
-              <p className="text-xs opacity-80 leading-relaxed text-white">
-                OnboardTicket is committed to upholding the highest standards in compliance with international civil aviation regulations and ethical booking practices. This includes, but is not limited to, strict avoidance of misuse of booking classes, fraudulent activities, duplicate, speculative, or fictitious reservations. Users who engage in repeated cancellations without legitimate intent will be subject to monitoring, and may face usage restrictions or permanent bans from our platform.
-              </p>
-            </div>
-            {/* About */}
-            <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center ">
-              <h4 className="text-base md:text-lg font-bold text-white">
-                About
-              </h4>
-              <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-white">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/about")}>Who We are ?</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/privacy-policy")}>Privacy Policy</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/terms-conditions")}>Terms & Conditions</li>
-              </ul>
-            </div>
-            {/* Get Help */}
-            <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center ">
-              <h4 className="text-base md:text-lg font-bold text-white">
-                Get Help
-              </h4>
-              <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-white">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/faq")}>FAQs</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/payment")}>Payment</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/contact")}>Contact Support 24/7</li>
-              </ul>
-            </div>
-            {/* Follow Us */}
-            <div className="space-y-2 md:space-y-4 flex flex-col items-center justify-center ">
-              <h4 className="text-base md:text-lg font-bold text-white">
-                Follow US
-              </h4>
-              
-
-              <div className="space-y-1 md:space-y-2">
-                <h5 className="text-base md:text-lg font-bold text-white">
-                  Stay in touch
-                </h5>
-                <p className="text-xs sm:text-sm font-semibold text-white">
-                  Blog
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

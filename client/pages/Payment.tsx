@@ -1,10 +1,512 @@
-import { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, CreditCard, AlertCircle, Shield, Lock, Zap } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
+import { useFormValidation } from "../hooks/useFormValidation";
+import { PaymentRequest, PaymentResponse } from "@shared/api";
+import { useAuth } from "../hooks/useAuth";
+import { useAuthenticatedFetch } from "../hooks/useAuth";
+import StripePaymentForm from "../components/StripePaymentForm";
 
 export default function Payment() {
   const navigate = useNavigate();
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Card');
+  const { user } = useAuth();
+  const authenticatedFetch = useAuthenticatedFetch();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('stripe');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [bookingData, setBookingData] = useState<any>(null);
+  const [passengerData, setPassengerData] = useState<any>(null);
+  const [routeData, setRouteData] = useState<any>(null);
+  const [paypalLoading, setPaypalLoading] = useState(false);
+
+  const [paymentDetails, setPaymentDetails] = useState({
+    country: "",
+    cardholderName: "",
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+  });
+
+  // Validation rules for payment form
+  const validationRules = {
+    country: [
+      { required: true, message: 'Country is required' }
+    ],
+    cardholderName: [
+      { required: true, message: 'Cardholder name is required' },
+      { minLength: 2, message: 'Name must be at least 2 characters' },
+      { pattern: /^[a-zA-Z\s-']+$/, message: 'Name can only contain letters, spaces, hyphens, and apostrophes' }
+    ],
+    cardNumber: [
+      { required: true, message: 'Card number is required' },
+      { pattern: /^\d{4}\s?\d{4}\s?\d{4}\s?\d{4}$/, message: 'Please enter a valid 16-digit card number' }
+    ],
+    expiryDate: [
+      { required: true, message: 'Expiry date is required' },
+      { pattern: /^(0[1-9]|1[0-2])\/\d{2}$/, message: 'Please enter date in MM/YY format' },
+      {
+        custom: (value: string) => {
+          if (!value) return false;
+          const [month, year] = value.split('/');
+          const expiry = new Date(2000 + parseInt(year), parseInt(month) - 1);
+          return expiry > new Date();
+        },
+        message: 'Card has expired'
+      }
+    ],
+    cvv: [
+      { required: true, message: 'CVV is required' },
+      { pattern: /^\d{3,4}$/, message: 'CVV must be 3 or 4 digits' }
+    ]
+  };
+
+  const {
+    validateForm,
+    validateSingleField,
+    setFieldTouched,
+    getFieldError,
+    hasFieldError,
+    clearFieldError,
+    hasAnyError,
+  } = useFormValidation(validationRules);
+
+  // Load booking data from previous steps
+  useEffect(() => {
+    // Load booking data (most important)
+    const savedBooking = localStorage.getItem('currentBooking');
+    const savedRoute = localStorage.getItem('selectedRoute') || localStorage.getItem('bookingRoute');
+    const savedPassengers = localStorage.getItem('passengerData') || localStorage.getItem('bookingPassengers');
+
+    if (savedBooking) {
+      try {
+        const booking = JSON.parse(savedBooking);
+        setBookingData(booking);
+        console.log('Loaded booking data for payment:', booking);
+      } catch (error) {
+        console.error('Error parsing booking data:', error);
+      }
+    } else {
+      // If no booking data, redirect back to booking flow
+      console.warn('No booking data found, redirecting to booking flow');
+      navigate('/userform/confirmation');
+      return;
+    }
+
+    if (savedRoute) {
+      try {
+        setRouteData(JSON.parse(savedRoute));
+      } catch (error) {
+        console.error('Error parsing route data:', error);
+      }
+    }
+
+    if (savedPassengers) {
+      try {
+        setPassengerData(JSON.parse(savedPassengers));
+      } catch (error) {
+        console.error('Error parsing passenger data:', error);
+      }
+    }
+
+    // If user is logged in, pre-fill cardholder name
+    if (user) {
+      setPaymentDetails(prev => ({
+        ...prev,
+        cardholderName: `${user.firstName} ${user.lastName}`
+      }));
+    }
+
+    // Check authentication
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+  }, [user, navigate]);
+
+  const handleInputChange = (field: string, value: string) => {
+    let formattedValue = value;
+
+    // Format card number with spaces
+    if (field === 'cardNumber') {
+      formattedValue = value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+      if (formattedValue.length > 19) return; // Max length for formatted card number
+    }
+
+    // Format expiry date
+    if (field === 'expiryDate') {
+      formattedValue = value.replace(/\D/g, '');
+      if (formattedValue.length >= 2) {
+        formattedValue = formattedValue.substring(0, 2) + '/' + formattedValue.substring(2, 4);
+      }
+      if (formattedValue.length > 5) return;
+    }
+
+    // Format CVV (only numbers)
+    if (field === 'cvv') {
+      formattedValue = value.replace(/\D/g, '');
+      if (formattedValue.length > 4) return;
+    }
+
+    setPaymentDetails(prev => ({
+      ...prev,
+      [field]: formattedValue
+    }));
+
+    clearFieldError(field);
+    setFieldTouched(field, true);
+
+    // Validate field after a short delay
+    setTimeout(() => {
+      validateSingleField(field, formattedValue);
+    }, 100);
+  };
+
+  const calculateTotal = () => {
+    const passengerCount = passengerData?.passengers?.length || 1;
+    return passengerCount * 10; // $10 per passenger
+  };
+
+  const createBookingForStripe = async () => {
+    if (bookingData) return; // Booking already created
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // Validate required data first
+      if (!routeData) {
+        throw new Error('Route information is missing. Please go back and select your route.');
+      }
+
+      if (!passengerData?.passengers || passengerData.passengers.length === 0) {
+        throw new Error('Passenger information is missing. Please go back and add passenger details.');
+      }
+
+      if (!passengerData.contactEmail && !user?.email) {
+        throw new Error('Contact email is required. Please provide a contact email.');
+      }
+
+      // Transform route data to match booking API expectations
+      const transformedRoute = {
+        from: {
+          code: routeData.from?.code || '',
+          name: routeData.from?.name || '',
+          city: routeData.from?.city || '',
+          country: routeData.from?.country || ''
+        },
+        to: {
+          code: routeData.to?.code || '',
+          name: routeData.to?.name || '',
+          city: routeData.to?.city || '',
+          country: routeData.to?.country || ''
+        },
+        departureDate: routeData.departureDate,
+        ...(routeData.returnDate && { returnDate: routeData.returnDate }),
+        tripType: routeData.tripType || 'oneway'
+      };
+
+      // Create booking first
+      const bookingRequest = {
+        route: transformedRoute,
+        passengers: passengerData.passengers,
+        contactEmail: passengerData.contactEmail || user?.email || "",
+        termsAccepted: true,
+      };
+
+      console.log('Creating booking for Stripe payment:', bookingRequest);
+      const bookingResponse = await authenticatedFetch('/api/bookings', {
+        method: 'POST',
+        body: JSON.stringify(bookingRequest),
+      });
+
+      if (!bookingResponse.ok) {
+        const errorData = await bookingResponse.text();
+        console.error('Booking creation failed:', {
+          status: bookingResponse.status,
+          error: errorData
+        });
+
+        try {
+          const parsedError = JSON.parse(errorData);
+          throw new Error(parsedError.message || 'Failed to create booking');
+        } catch {
+          throw new Error(`Failed to create booking: ${bookingResponse.status} ${bookingResponse.statusText}`);
+        }
+      }
+
+      const bookingResult = await bookingResponse.json();
+      console.log('Booking created successfully for Stripe:', bookingResult);
+
+      if (!bookingResult.success || !bookingResult.booking) {
+        throw new Error(bookingResult.message || 'Failed to create booking');
+      }
+
+      setBookingData(bookingResult.booking);
+    } catch (err) {
+      console.error('Booking creation error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create booking');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Create booking when Stripe is selected
+  useEffect(() => {
+    if (selectedPaymentMethod === 'stripe' && routeData && passengerData && !bookingData) {
+      createBookingForStripe();
+    }
+  }, [selectedPaymentMethod, routeData, passengerData]);
+
+  const handlePayPalPayment = async () => {
+    setPaypalLoading(true);
+    setError("");
+
+    try {
+      // Validate required data first
+      if (!routeData) {
+        throw new Error('Route information is missing. Please go back and select your route.');
+      }
+
+      if (!passengerData?.passengers || passengerData.passengers.length === 0) {
+        throw new Error('Passenger information is missing. Please go back and add passenger details.');
+      }
+
+      if (!passengerData.contactEmail && !user?.email) {
+        throw new Error('Contact email is required. Please provide a contact email.');
+      }
+
+      // Transform route data to match booking API expectations
+      const transformedRoute = {
+        from: {
+          code: routeData.from?.code || '',
+          name: routeData.from?.name || '',
+          city: routeData.from?.city || '',
+          country: routeData.from?.country || ''
+        },
+        to: {
+          code: routeData.to?.code || '',
+          name: routeData.to?.name || '',
+          city: routeData.to?.city || '',
+          country: routeData.to?.country || ''
+        },
+        departureDate: routeData.departureDate,
+        ...(routeData.returnDate && { returnDate: routeData.returnDate }),
+        tripType: routeData.tripType || 'oneway'
+      };
+
+      console.log('Creating booking with data:', {
+        route: transformedRoute,
+        passengers: passengerData.passengers,
+        contactEmail: passengerData.contactEmail || user?.email,
+        passengerCount: passengerData.passengers.length
+      });
+
+      // Create booking first
+      const bookingRequest = {
+        route: transformedRoute,
+        passengers: passengerData.passengers,
+        contactEmail: passengerData.contactEmail || user?.email || "",
+        termsAccepted: true,
+      };
+
+      console.log('Sending booking request to /api/bookings...');
+      const bookingResponse = await authenticatedFetch('/api/bookings', {
+        method: 'POST',
+        body: JSON.stringify(bookingRequest),
+      });
+
+      console.log('Booking response status:', bookingResponse.status);
+
+      if (!bookingResponse.ok) {
+        const errorData = await bookingResponse.text();
+        console.error('Booking creation failed:', {
+          status: bookingResponse.status,
+          statusText: bookingResponse.statusText,
+          error: errorData,
+          url: '/api/bookings',
+          requestData: bookingRequest
+        });
+
+        // Try to parse error message
+        try {
+          const parsedError = JSON.parse(errorData);
+          throw new Error(parsedError.message || 'Failed to create booking');
+        } catch {
+          throw new Error(`Failed to create booking: ${bookingResponse.status} ${bookingResponse.statusText}`);
+        }
+      }
+
+      const bookingResult = await bookingResponse.json();
+      console.log('Booking created successfully:', bookingResult);
+
+      if (!bookingResult.success || !bookingResult.booking) {
+        throw new Error(bookingResult.message || 'Failed to create booking');
+      }
+
+      const booking = bookingResult.booking;
+
+      // Create PayPal order
+      const paypalOrderResponse = await authenticatedFetch('/api/payments/paypal/create-order', {
+        method: 'POST',
+        body: JSON.stringify({
+          bookingId: booking.id,
+          amount: calculateTotal(),
+          currency: 'USD'
+        }),
+      });
+
+      if (!paypalOrderResponse.ok) {
+        const errorData = await paypalOrderResponse.text();
+        console.error('PayPal order creation failed:', {
+          status: paypalOrderResponse.status,
+          statusText: paypalOrderResponse.statusText,
+          error: errorData
+        });
+
+        try {
+          const parsedError = JSON.parse(errorData);
+          throw new Error(parsedError.message || 'Failed to create PayPal order');
+        } catch {
+          throw new Error(`Failed to create PayPal order: ${paypalOrderResponse.status} ${paypalOrderResponse.statusText}`);
+        }
+      }
+
+      const paypalOrderData = await paypalOrderResponse.json();
+      console.log('PayPal order created:', paypalOrderData);
+
+      const { orderID, approvalUrl } = paypalOrderData;
+
+      if (!approvalUrl) {
+        throw new Error('PayPal approval URL not received');
+      }
+
+      // Redirect to PayPal for approval
+      window.location.href = approvalUrl;
+
+    } catch (err) {
+      console.error('PayPal payment error:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred while processing PayPal payment. Please try again.');
+    } finally {
+      setPaypalLoading(false);
+    }
+  };
+
+  const handlePayment = async () => {
+    // Set all fields as touched for validation
+    Object.keys(paymentDetails).forEach(field => {
+      setFieldTouched(field, true);
+    });
+
+    const isValid = validateForm(paymentDetails);
+
+    if (!isValid) {
+      setError("Please fill in all required fields correctly");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // Validate required data first
+      if (!routeData) {
+        throw new Error('Route information is missing. Please go back and select your route.');
+      }
+
+      if (!passengerData?.passengers || passengerData.passengers.length === 0) {
+        throw new Error('Passenger information is missing. Please go back and add passenger details.');
+      }
+
+      // Transform route data to match booking API expectations
+      const transformedRoute = {
+        from: {
+          code: routeData.from?.code || '',
+          name: routeData.from?.name || '',
+          city: routeData.from?.city || '',
+          country: routeData.from?.country || ''
+        },
+        to: {
+          code: routeData.to?.code || '',
+          name: routeData.to?.name || '',
+          city: routeData.to?.city || '',
+          country: routeData.to?.country || ''
+        },
+        departureDate: routeData.departureDate,
+        ...(routeData.returnDate && { returnDate: routeData.returnDate }),
+        tripType: routeData.tripType || 'oneway'
+      };
+
+      // Create booking first
+      const bookingRequest = {
+        route: transformedRoute,
+        passengers: passengerData.passengers,
+        contactEmail: passengerData.contactEmail || user?.email || "",
+        termsAccepted: true,
+      };
+
+      const bookingResponse = await authenticatedFetch('/api/bookings', {
+        method: 'POST',
+        body: JSON.stringify(bookingRequest),
+      });
+
+      if (!bookingResponse.ok) {
+        throw new Error('Failed to create booking');
+      }
+
+      const bookingResult = await bookingResponse.json();
+
+      if (!bookingResult.success || !bookingResult.booking) {
+        throw new Error(bookingResult.message || 'Failed to create booking');
+      }
+
+      const booking = bookingResult.booking;
+
+      // Process payment
+      const paymentRequest: PaymentRequest = {
+        bookingId: booking.id,
+        paymentMethod: selectedPaymentMethod as "card" | "paypal",
+        paymentDetails: selectedPaymentMethod === 'card' ? {
+          cardNumber: paymentDetails.cardNumber.replace(/\s/g, ''),
+          expiryDate: paymentDetails.expiryDate,
+          cvv: paymentDetails.cvv,
+          cardholderName: paymentDetails.cardholderName,
+          country: paymentDetails.country,
+        } : {},
+      };
+
+      const paymentResponse = await authenticatedFetch('/api/payments', {
+        method: 'POST',
+        body: JSON.stringify(paymentRequest),
+      });
+
+      if (!paymentResponse.ok) {
+        throw new Error('Payment failed');
+      }
+
+      const paymentResult: PaymentResponse = await paymentResponse.json();
+
+      if (paymentResult.success) {
+        setSuccess(true);
+
+        // Clear stored data
+        localStorage.removeItem('selectedRoute');
+        localStorage.removeItem('passengerData');
+
+        // Redirect to thank you page after short delay
+        setTimeout(() => {
+          navigate('/userform/thankyou');
+        }, 2000);
+      } else {
+        setError(paymentResult.message || 'Payment failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Payment error:', err);
+      setError('An error occurred while processing your payment. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className=" min-h-screen bg-ob-background font-plus-jakarta">
@@ -22,29 +524,48 @@ export default function Payment() {
       </header>
 
       {/* Payment Header Section */}
-      <div className="bg-[#505BFB] py-12 lg:py-20 ">
+      <div className="bg-[#505BFB] py-12 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-36">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
             <div>
               <h1 className="text-3xl lg:text-5xl font-extrabold text-white mb-8 lg:mb-12">
-                Payment
+                Secure Payment
               </h1>
               <div className="space-y-2 text-white">
                 <div className="flex items-center gap-8">
-                  <span className="text-lg lg:text-xl font-bold">TOTAL :</span>
-                  <span className="text-xl lg:text-2xl font-bold">10$</span>
+                  <span className="text-lg lg:text-xl font-bold">TOTAL:</span>
+                  <span className="text-xl lg:text-2xl font-bold">${calculateTotal()}</span>
                 </div>
                 <div className="flex items-center gap-8">
-                  <span className="text-lg lg:text-xl font-bold">Passengers :</span>
-                  <span className="text-xl lg:text-2xl font-bold">1</span>
+                  <span className="text-lg lg:text-xl font-bold">Passengers:</span>
+                  <span className="text-xl lg:text-2xl font-bold">
+                    {passengerData?.passengers?.length || 1}
+                  </span>
                 </div>
+                {routeData && (
+                  <div className="flex items-center gap-8">
+                    <span className="text-lg lg:text-xl font-bold">Route:</span>
+                    <span className="text-xl lg:text-2xl font-bold">
+                      {routeData.from?.city} → {routeData.to?.city}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Security Badge */}
+              <div className="flex items-center gap-2 mt-4 text-green-200">
+                <Shield className="w-5 h-5" />
+                <span className="text-sm font-medium">256-bit SSL Encrypted</span>
               </div>
             </div>
-            
+
             <div className="mt-8 lg:mt-0">
-              <button className="flex items-center gap-3 px-6 py-3 bg-[#C6FF9A] text-[#766868] font-bold text-lg rounded-full hover:bg-green-200 transition-colors">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-3 px-6 py-3 bg-[#C6FF9A] text-[#766868] font-bold text-lg rounded-full hover:bg-green-200 transition-colors"
+              >
                 <ArrowLeft className="w-5 h-5" />
-                Back :
+                Back
               </button>
             </div>
           </div>
@@ -53,71 +574,334 @@ export default function Payment() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-36 py-12 lg:py-20">
         <section className="bg-white/90 rounded-3xl p-8 lg:p-16 shadow-lg">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-ob-primary mb-8 leading-tight text-center">Payment</h1>
-          <div className="text-[#23235B] text-lg lg:text-xl font-semibold leading-relaxed mb-8">
-            {/* Payment content here, ensure text is dark and readable */}
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <Lock className="w-6 h-6 text-[#505BFB]" />
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-ob-primary leading-tight text-center">
+              Secure Payment
+            </h1>
+          </div>
 
+          {/* Success Message */}
+          {success && (
+            <div className="mb-8 p-6 bg-green-50 border border-green-200 rounded-lg text-center">
+              <div className="text-green-600 text-2xl font-bold mb-2">Payment Successful!</div>
+              <p className="text-green-700">Your booking has been confirmed. Redirecting to confirmation page...</p>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center gap-2 text-red-700 font-medium">
+                <AlertCircle className="w-5 h-5" />
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
+
+          <div className="text-[#23235B] text-lg lg:text-xl font-semibold leading-relaxed mb-8">
             {/* Payment Method Tabs */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              {['Card', 'PayPal', 'Crypto'].map((method) => (
+              {[
+                { key: 'stripe', label: 'Stripe (Recommended)', icon: Zap },
+                { key: 'card', label: 'Credit Card', icon: CreditCard },
+                { key: 'paypal', label: 'PayPal', icon: null }
+              ].map((method) => (
                 <button
-                  key={method}
-                  onClick={() => setSelectedPaymentMethod(method)}
-                  className={`flex-1 px-6 py-4 rounded-lg border-2 font-bold text-lg transition-colors ${
-                    selectedPaymentMethod === method
-                      ? 'bg-white border-white text-[#848484] shadow-lg'
+                  key={method.key}
+                  onClick={() => setSelectedPaymentMethod(method.key)}
+                  disabled={loading || success}
+                  className={`flex-1 px-6 py-4 rounded-lg border-2 font-bold text-lg transition-colors flex items-center justify-center gap-2 ${
+                    selectedPaymentMethod === method.key
+                      ? 'bg-[#505BFB] border-[#505BFB] text-white shadow-lg'
                       : 'bg-[#EBECFF] border-white text-[#848484] hover:bg-white'
-                  }`}
+                  } ${loading || success ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  {method}
+                  {method.icon && <method.icon className="w-5 h-5" />}
+                  {method.label}
                 </button>
               ))}
             </div>
 
-            {/* Form Fields */}
-            <div className="space-y-6">
-              <div>
-                <input
-                  type="text"
-                  placeholder="Country"
-                  className="w-full px-6 py-4 rounded-lg border border-white bg-white text-[#84848470] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB]"
-                />
-              </div>
+            {/* Payment Form - Only show for card payments */}
+            {selectedPaymentMethod === 'card' && !success && (
+              <div className="space-y-6">
+                {/* Country */}
+                <div>
+                  <label className="block text-sm font-semibold text-[#637996] mb-2">
+                    Country *
+                  </label>
+                  <select
+                    value={paymentDetails.country}
+                    onChange={(e) => handleInputChange('country', e.target.value)}
+                    onBlur={() => setFieldTouched('country', true)}
+                    disabled={loading}
+                    className={`w-full px-6 py-4 rounded-lg border bg-white text-[#20242A] font-bold text-lg focus:outline-none focus:ring-2 focus:ring-[#505BFB] ${
+                      hasFieldError('country') ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  >
+                    <option value="">Select Country</option>
+                    <option value="US">United States</option>
+                    <option value="CA">Canada</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="DE">Germany</option>
+                    <option value="FR">France</option>
+                    <option value="AU">Australia</option>
+                    <option value="other">Other</option>
+                  </select>
+                  {hasFieldError('country') && (
+                    <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>{getFieldError('country')}</span>
+                    </div>
+                  )}
+                </div>
 
-              <div>
-                <input
-                  type="text"
-                  placeholder="Name On the Card"
-                  className="w-full px-6 py-4 rounded-lg border border-white bg-white text-[#84848470] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB]"
-                />
-              </div>
+                {/* Cardholder Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-[#637996] mb-2">
+                    Name on Card *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter cardholder name"
+                    value={paymentDetails.cardholderName}
+                    onChange={(e) => handleInputChange('cardholderName', e.target.value)}
+                    onBlur={() => setFieldTouched('cardholderName', true)}
+                    disabled={loading}
+                    className={`w-full px-6 py-4 rounded-lg border bg-white text-[#20242A] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB] ${
+                      hasFieldError('cardholderName') ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {hasFieldError('cardholderName') && (
+                    <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>{getFieldError('cardholderName')}</span>
+                    </div>
+                  )}
+                </div>
 
-              <div>
-                <input
-                  type="text"
-                  placeholder="Card Number"
-                  className="w-full px-6 py-4 rounded-lg border border-white bg-white text-[#84848470] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB]"
-                />
-              </div>
+                {/* Card Number */}
+                <div>
+                  <label className="block text-sm font-semibold text-[#637996] mb-2">
+                    Card Number *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="1234 5678 9012 3456"
+                    value={paymentDetails.cardNumber}
+                    onChange={(e) => handleInputChange('cardNumber', e.target.value)}
+                    onBlur={() => setFieldTouched('cardNumber', true)}
+                    disabled={loading}
+                    className={`w-full px-6 py-4 rounded-lg border bg-white text-[#20242A] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB] ${
+                      hasFieldError('cardNumber') ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {hasFieldError('cardNumber') && (
+                    <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>{getFieldError('cardNumber')}</span>
+                    </div>
+                  )}
+                </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <input
-                  type="text"
-                  placeholder="MM/YY"
-                  className="flex-1 px-6 py-4 rounded-lg border border-white bg-white text-[#84848470] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB]"
-                />
-                <input
-                  type="text"
-                  placeholder="CVV"
-                  className="flex-1 px-6 py-4 rounded-lg border border-white bg-white text-[#84848470] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB]"
-                />
-              </div>
+                {/* Expiry and CVV */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-semibold text-[#637996] mb-2">
+                      Expiry Date *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="MM/YY"
+                      value={paymentDetails.expiryDate}
+                      onChange={(e) => handleInputChange('expiryDate', e.target.value)}
+                      onBlur={() => setFieldTouched('expiryDate', true)}
+                      disabled={loading}
+                      className={`w-full px-6 py-4 rounded-lg border bg-white text-[#20242A] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB] ${
+                        hasFieldError('expiryDate') ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {hasFieldError('expiryDate') && (
+                      <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{getFieldError('expiryDate')}</span>
+                      </div>
+                    )}
+                  </div>
 
-              {/* Pay Button */}
-              <button className="w-full py-4 bg-[#505BFB] text-white font-bold text-xl rounded-xl hover:bg-blue-600 transition-colors shadow-lg mt-8">
-                PAY : 10$
-              </button>
-            </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-semibold text-[#637996] mb-2">
+                      CVV *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="123"
+                      value={paymentDetails.cvv}
+                      onChange={(e) => handleInputChange('cvv', e.target.value)}
+                      onBlur={() => setFieldTouched('cvv', true)}
+                      disabled={loading}
+                      className={`w-full px-6 py-4 rounded-lg border bg-white text-[#20242A] font-bold text-lg placeholder:text-[#84848470] focus:outline-none focus:ring-2 focus:ring-[#505BFB] ${
+                        hasFieldError('cvv') ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {hasFieldError('cvv') && (
+                      <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{getFieldError('cvv')}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Security Notice */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <Shield className="w-5 h-5" />
+                    <span className="font-semibold">Your payment is secure</span>
+                  </div>
+                  <p className="text-blue-600 text-sm mt-1">
+                    All payment information is encrypted and processed securely. We never store your card details.
+                  </p>
+                </div>
+
+                {/* Pay Button */}
+                <button
+                  onClick={handlePayment}
+                  disabled={loading || hasAnyError() || success}
+                  className={`w-full py-4 font-bold text-xl rounded-xl transition-colors shadow-lg mt-8 ${
+                    loading || hasAnyError() || success
+                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                      : 'bg-[#505BFB] text-white hover:bg-blue-600'
+                  }`}
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Processing Payment...
+                    </div>
+                  ) : (
+                    `PAY $${calculateTotal()}`
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Stripe Payment */}
+            {selectedPaymentMethod === 'stripe' && !success && (
+              <div className="space-y-6">
+                {/* Stripe Info */}
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+                      <Zap className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-purple-700">Stripe Payment</h3>
+                      <p className="text-sm text-purple-600">Fast, secure, and trusted worldwide</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/80 border border-purple-200 rounded-lg p-4 mb-4">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-gray-700">Total Amount:</span>
+                      <span className="font-bold text-xl text-purple-600">${calculateTotal()}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm text-gray-600 mt-2">
+                      <span>Passengers:</span>
+                      <span>{passengerData?.passengers?.length || 1}</span>
+                    </div>
+                  </div>
+
+                  {bookingData && (
+                    <StripePaymentForm
+                      amount={calculateTotal()}
+                      currency="USD"
+                      bookingId={bookingData.id}
+                      onSuccess={(paymentIntentId) => {
+                        console.log('Stripe payment successful:', paymentIntentId);
+                        setSuccess(true);
+                        setTimeout(() => {
+                          navigate('/payment/success');
+                        }, 1500);
+                      }}
+                      onError={(error) => {
+                        setError(error);
+                      }}
+                      loading={loading}
+                      setLoading={setLoading}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* PayPal Payment */}
+            {selectedPaymentMethod === 'paypal' && !success && (
+              <div className="space-y-6">
+                {/* PayPal Info */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-[#0070ba] rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">PP</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-[#0070ba]">PayPal</h3>
+                      <p className="text-sm text-blue-600">Secure payment with PayPal</p>
+                    </div>
+                  </div>
+
+                  <p className="text-blue-700 mb-4">
+                    You will be redirected to PayPal to complete your payment securely.
+                  </p>
+
+                  <div className="bg-white border border-blue-200 rounded-lg p-4 mb-4">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-gray-700">Total Amount:</span>
+                      <span className="font-bold text-xl text-[#0070ba]">${calculateTotal()}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm text-gray-600 mt-2">
+                      <span>Passengers:</span>
+                      <span>{passengerData?.passengers?.length || 1}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* PayPal Button */}
+                <button
+                  onClick={handlePayPalPayment}
+                  disabled={paypalLoading}
+                  className={`w-full py-4 font-bold text-xl rounded-xl transition-colors shadow-lg ${
+                    paypalLoading
+                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                      : 'bg-[#0070ba] text-white hover:bg-[#005ea6]'
+                  }`}
+                >
+                  {paypalLoading ? (
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Redirecting to PayPal...
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-3">
+                      <span>Pay with PayPal</span>
+                      <span className="text-lg">$${calculateTotal()}</span>
+                    </div>
+                  )}
+                </button>
+
+                {/* Security Notice */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Shield className="w-5 h-5" />
+                    <span className="font-semibold">Secure PayPal Payment</span>
+                  </div>
+                  <p className="text-gray-600 text-sm mt-1">
+                    Your payment is protected by PayPal's Buyer Protection. You can pay with your PayPal balance, bank account, or credit card.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </main>

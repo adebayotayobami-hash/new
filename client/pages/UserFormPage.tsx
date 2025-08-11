@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import Route from "./Route";
 import Passengers from "./Passengers";
 import Confirmation from "./Confirmation";
@@ -11,7 +12,15 @@ type Step = "route" | "passengers" | "confirmation" | "search" | "thankyou";
 export default function UserFormPage({ step }: { step?: string }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const [currentStep, setCurrentStep] = useState<Step>(step as Step || "route");
+
+  // Redirect to register if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/register");
+    }
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     if (step) {

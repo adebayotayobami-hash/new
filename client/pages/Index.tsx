@@ -6,9 +6,12 @@ import {
   ArrowRight,
   ArrowLeft,
   Instagram,
+  User,
+  LogOut,
 } from "lucide-react";
 import TestimonialCarousel from "../components/ui/TestimonialCarousel";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const testimonials = [
   {
@@ -75,6 +78,7 @@ const testimonials = [
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, logout, isAuthenticated } = useAuth();
   const [testimonialIdxLeft, setTestimonialIdxLeft] = useState(0);
   const [testimonialIdxRight, setTestimonialIdxRight] = useState(1);
   const totalTestimonials = testimonials.length;
@@ -82,6 +86,15 @@ const Index = () => {
   const nextTestimonialLeft = () => setTestimonialIdxLeft((testimonialIdxLeft + 1) % totalTestimonials);
   const prevTestimonialRight = () => setTestimonialIdxRight((testimonialIdxRight - 1 + totalTestimonials) % totalTestimonials);
   const nextTestimonialRight = () => setTestimonialIdxRight((testimonialIdxRight + 1) % totalTestimonials);
+
+  // Helper function to handle Book Now navigation
+  const handleBookNow = () => {
+    if (isAuthenticated) {
+      navigate("/userform");
+    } else {
+      navigate("/register");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#E7E9FF] font-jakarta overflow-x-hidden px-4 md:px-16 py-4 md:py-16">
@@ -107,12 +120,42 @@ const Index = () => {
             >
               Get Support
             </button>
-            <button
-              className="px-8 py-2 bg-white text-brand-text-primary font-bold text-base md:text-lg rounded-lg hover:bg-gray-50 transition-colors shadow-md"
-              onClick={() => navigate("/userform")}
-            >
-              Book now
-            </button>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4">
+                <button
+                  className="px-8 py-2 bg-[#3839C9] text-white font-bold text-base md:text-lg rounded-lg hover:bg-blue-700 transition-colors shadow-md flex items-center gap-2"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  <User className="w-4 h-4" />
+                  Dashboard
+                </button>
+                <button
+                  className="px-8 py-2 text-brand-text-primary font-bold text-base md:text-lg hover:bg-gray-100 rounded-lg transition-colors shadow-none flex items-center gap-2"
+                  onClick={() => {
+                    logout();
+                    navigate("/");
+                  }}
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <button
+                  className="px-8 py-2 text-brand-text-primary font-bold text-base md:text-lg hover:bg-gray-100 rounded-lg transition-colors shadow-none"
+                  onClick={() => navigate("/login")}
+                >
+                  Sign In
+                </button>
+                <button
+                  className="px-8 py-2 bg-white text-brand-text-primary font-bold text-base md:text-lg rounded-lg hover:bg-gray-50 transition-colors shadow-md"
+                  onClick={handleBookNow}
+                >
+                  Book now
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -133,7 +176,7 @@ const Index = () => {
               {/* CTA Button */}
               <button
                 className="flex items-center gap-3 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl hover:bg-blue-700 transition-colors shadow-lg"
-                onClick={() => navigate("/userform")}
+                onClick={handleBookNow}
               >
                 <Navigation className="w-5 h-5 md:w-6 md:h-6" />
                 Book Now
@@ -141,7 +184,7 @@ const Index = () => {
 
               <p className="text-xs md:text-sm font-bold text-[#637996] mt-4 md:mt-6">
                 Instant & secure Booking from
-                Just 10$
+                Just $15
               </p>
             </div>
             {/* Image on the right (show after content on mobile and up to lg) */}
@@ -296,13 +339,13 @@ const Index = () => {
         <div className="container mx-auto px-4 md:px-8 text-center">
           <button
             className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl mx-auto hover:bg-blue-700 transition-colors shadow-lg"
-            onClick={() => navigate("/userform")}
+            onClick={handleBookNow}
           >
             <Navigation className="w-5 h-5 md:w-6 md:h-6" />
             Book Now
           </button>
           <p className="text-xs md:text-sm font-bold text-[#637996] mt-2 md:mt-4">
-            instant & secure Booking from Just 10$
+            instant & secure Booking from Just $15
           </p>
         </div>
       </section>
@@ -509,13 +552,13 @@ const Index = () => {
         <div className="container mx-auto px-4 md:px-8 text-center">
           <button
             className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl mx-auto hover:bg-blue-700 transition-colors shadow-lg"
-            onClick={() => navigate("/userform")}
+            onClick={handleBookNow}
           >
             <Navigation className="w-5 h-5 md:w-6 md:h-6" />
             Book Now
           </button>
           <p className="text-xs md:text-sm font-bold text-[#637996] mt-2 md:mt-4">
-            instant & secure Booking from Just 10$
+            instant & secure Booking from Just $15
           </p>
         </div>
       </section>
@@ -579,13 +622,13 @@ const Index = () => {
         <div className="container mx-auto px-4 md:px-8 text-center">
           <button
             className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-lg md:text-xl mx-auto hover:bg-blue-700 transition-colors shadow-lg"
-            onClick={() => navigate("/userform")}
+            onClick={handleBookNow}
           >
             <Navigation className="w-5 h-5 md:w-6 md:h-6" />
             Book Now
           </button>
           <p className="text-xs md:text-sm font-bold text-[#637996] mt-2 md:mt-4">
-            instant & secure Booking from Just 10$
+            instant & secure Booking from Just $15
           </p>
         </div>
       </section>
@@ -608,7 +651,7 @@ const Index = () => {
               </h3>
               <div className="hidden sm:block border-l-4 border-black h-14 md:h-16 mx-0 sm:mx-4"></div>
               <p className="text-black font-medium flex-1 text-left text-sm md:text-base">
-                Instead of wasting hundreds on throwaway or temporary flight tickets, you can meet your travel requirements starting at just $10.
+                Instead of wasting hundreds on throwaway or temporary flight tickets, you can meet your travel requirements starting at just $15.
               </p>
             </div>
             {/* Card 2 */}
@@ -656,7 +699,7 @@ const Index = () => {
                 </button>
                 <button
                   className="flex items-center gap-2 md:gap-4 bg-[#3839C9] text-white px-6 md:px-8 py-2 md:py-3 rounded-xl font-semibold text-base md:text-lg hover:bg-blue-700 transition-colors"
-                  onClick={() => navigate("/userform")}
+                  onClick={handleBookNow}
                 >
                   <Navigation className="w-4 h-4 md:w-5 md:h-5" />
                   Book Now

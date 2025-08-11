@@ -25,7 +25,7 @@ export default function About() {
           </button>
           <button
             className="px-4 sm:px-8 py-2 sm:py-3 text-ob-dark font-semibold text-base sm:text-lg hover:bg-gray-100 rounded-lg transition-colors"
-            onClick={() => navigate("/userform")}
+            onClick={() => navigate("/register")}
           >
             Book now
           </button>
@@ -54,12 +54,12 @@ export default function About() {
             <div className="mb-8">
               <button
                 className="w-full max-w-md px-12 py-4 bg-[#3150DA] text-white font-black text-xl lg:text-2xl rounded-full hover:bg-blue-700 transition-colors shadow-lg"
-                onClick={() => navigate("/userform")}
+                onClick={() => navigate("/register")}
               >
                 BOOK NOW
               </button>
               <p className="text-sm text-[#637996] font-bold mt-4 text-center max-w-md">
-                instant & secure Booking from Just 10$
+                instant & secure Booking from Just $15
               </p>
             </div>
           </div>
