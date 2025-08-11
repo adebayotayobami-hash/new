@@ -221,21 +221,9 @@ supabase secrets set AMADEUS_API_SECRET=your_client_secret
 Add these to your production deployment (Netlify, Vercel, etc.):
 
 ```bash
-# Stripe
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_PUBLISHABLE_KEY=pk_live_...
 
-# SendGrid  
-SENDGRID_API_KEY=SG....
 
-# Amadeus
-AMADEUS_API_KEY=your_amadeus_client_id
-AMADEUS_API_SECRET=your_amadeus_client_secret
 
-# Environment
-NODE_ENV=production
-CLIENT_URL=https://your-production-domain.com
-```
 
 ## 🧪 Testing
 

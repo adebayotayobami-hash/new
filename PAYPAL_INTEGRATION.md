@@ -14,13 +14,7 @@ OnboardTicket now supports PayPal payments alongside credit card processing. The
 Set the following environment variables for PayPal integration:
 
 ```bash
-# PayPal API Credentials
-PAYPAL_CLIENT_ID=your_paypal_client_id
-PAYPAL_CLIENT_SECRET=your_paypal_client_secret
-PAYPAL_SIGNATURE=your_paypal_signature
 
-# Environment
-NODE_ENV=development  # or production
 ```
 
 ### Supabase Edge Function
