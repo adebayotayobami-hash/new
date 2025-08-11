@@ -36,7 +36,16 @@ const airlineSchema = z.object({
 // Search flight offers
 export const handleSearchFlights: RequestHandler = async (req, res) => {
   try {
-    const validation = flightSearchSchema.safeParse(req.query);
+    // Convert string query parameters to proper types
+    const queryParams = {
+      ...req.query,
+      ...(req.query.adults && { adults: parseInt(req.query.adults as string) }),
+      ...(req.query.children && { children: parseInt(req.query.children as string) }),
+      ...(req.query.infants && { infants: parseInt(req.query.infants as string) }),
+      ...(req.query.max && { max: parseInt(req.query.max as string) })
+    };
+
+    const validation = flightSearchSchema.safeParse(queryParams);
     
     if (!validation.success) {
       return res.status(400).json({
