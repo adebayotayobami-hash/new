@@ -10,6 +10,8 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   const [formData, setFormData] = useState<RegisterRequest>({
     email: "",
@@ -53,9 +55,37 @@ export default function Register() {
 
     try {
       const response = await register(formData);
-      
+
       if (response.success) {
-        navigate("/dashboard");
+        setSuccess(true);
+
+        // Send verification email
+        try {
+          const verificationResponse = await fetch('/api/auth/send-verification', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              email: formData.email,
+              userId: response.user?.id,
+              userName: formData.firstName
+            })
+          });
+
+          const verificationData = await verificationResponse.json();
+
+          if (verificationData.success) {
+            setVerificationSent(true);
+          } else {
+            console.error('Failed to send verification email:', verificationData.message);
+            // Still show success but mention email issue
+            setError('Account created successfully, but there was an issue sending the verification email. Please contact support.');
+          }
+        } catch (verificationError) {
+          console.error('Verification email error:', verificationError);
+          setError('Account created successfully, but there was an issue sending the verification email. Please contact support.');
+        }
       } else {
         setError(response.message || "Registration failed. Please try again.");
       }
