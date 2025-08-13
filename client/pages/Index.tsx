@@ -644,35 +644,35 @@ const Index = () => {
           </p>
           <div className="space-y-8">
             {/* Card 1 */}
-            <div className="w-full flex flex-col sm:flex-row items-start sm:items-center rounded-2xl p-6 md:p-8 shadow-md gap-4 sm:gap-0" style={{ background: 'linear-gradient(90deg, rgb(197,230,222) 0%, rgb(205,206,242) 100%)' }}>
-              <img src="/onboard/cheap.png" alt="Cheaper" className="w-28 h-28 md:w-32 md:h-32 object-contain mb-2 sm:mb-0 sm:mr-6 bg-transparent" />
-              <h3 className="text-lg md:text-2xl font-extrabold text-[#191A78] min-w-[140px] md:min-w-[180px] mr-0 sm:mr-6 mb-2 sm:mb-0 text-left">
+            <div className="w-full flex flex-col sm:flex-row items-center sm:items-center rounded-2xl p-6 md:p-8 shadow-md gap-4 sm:gap-6" style={{ background: 'linear-gradient(90deg, rgb(197,230,222) 0%, rgb(205,206,242) 100%)' }}>
+              <img src="/onboard/cheap.png" alt="Cheaper" className="w-20 h-20 md:w-24 md:h-24 object-contain bg-transparent flex-shrink-0" />
+              <h3 className="text-lg md:text-xl font-extrabold text-[#191A78] min-w-[140px] md:min-w-[160px] text-center sm:text-left flex-shrink-0">
                 Cheaper than a full <br className="hidden sm:block"/> priced ticket
               </h3>
-              <div className="hidden sm:block border-l-4 border-black h-14 md:h-16 mx-0 sm:mx-4"></div>
-              <p className="text-black font-medium flex-1 text-left text-sm md:text-base">
+              <div className="hidden sm:block border-l-4 border-black h-12 md:h-14 mx-4 flex-shrink-0"></div>
+              <p className="text-black font-medium flex-1 text-center sm:text-left text-sm md:text-base">
                 Instead of wasting hundreds on throwaway or temporary flight tickets, you can meet your travel requirements starting at just $15.
               </p>
             </div>
             {/* Card 2 */}
-            <div className="w-full flex flex-col sm:flex-row items-start sm:items-center rounded-2xl p-6 md:p-8 shadow-md gap-4 sm:gap-0" style={{ background: 'linear-gradient(90deg, rgb(227,223,214) 0%, rgb(205,206,242) 100%)' }}>
-              <img src="/onboard/real.png" alt="Real Reservations" className="w-28 h-28 md:w-32 md:h-32 object-contain mb-2 sm:mb-0 sm:mr-6 bg-transparent" />
-              <h3 className="text-lg md:text-2xl font-extrabold text-[#191A78] min-w-[140px] md:min-w-[180px] mr-0 sm:mr-6 mb-2 sm:mb-0 text-left">
+            <div className="w-full flex flex-col sm:flex-row items-center sm:items-center rounded-2xl p-6 md:p-8 shadow-md gap-4 sm:gap-6" style={{ background: 'linear-gradient(90deg, rgb(227,223,214) 0%, rgb(205,206,242) 100%)' }}>
+              <img src="/onboard/real.png" alt="Real Reservations" className="w-20 h-20 md:w-24 md:h-24 object-contain bg-transparent flex-shrink-0" />
+              <h3 className="text-lg md:text-xl font-extrabold text-[#191A78] min-w-[140px] md:min-w-[160px] text-center sm:text-left flex-shrink-0">
                 Real <br className="hidden sm:block"/> Reservations
               </h3>
-              <div className="hidden sm:block border-l-4 border-black h-14 md:h-16 mx-0 sm:mx-4"></div>
-              <p className="text-black font-medium flex-1 text-left text-sm md:text-base">
+              <div className="hidden sm:block border-l-4 border-black h-12 md:h-14 mx-4 flex-shrink-0"></div>
+              <p className="text-black font-medium flex-1 text-center sm:text-left text-sm md:text-base">
                 A real reservation with PNR code is made by a registered travel agency. Pay via major credit cards or Paypal.
               </p>
             </div>
             {/* Card 3 */}
-            <div className="w-full flex flex-col sm:flex-row items-start sm:items-center rounded-2xl p-6 md:p-8 shadow-md gap-4 sm:gap-0" style={{ background: 'linear-gradient(90deg, rgb(223,227,211) 0%, rgb(205,206,242) 100%)' }}>
-              <img src="/onboard/get.png" alt="Get your reservation within 60 seconds" className="w-28 h-28 md:w-32 md:h-32 object-contain mb-2 sm:mb-0 sm:mr-6 bg-transparent" />
-              <h3 className="text-lg md:text-2xl font-extrabold text-[#191A78] min-w-[140px] md:min-w-[180px] mr-0 sm:mr-6 mb-2 sm:mb-0 text-left">
+            <div className="w-full flex flex-col sm:flex-row items-center sm:items-center rounded-2xl p-6 md:p-8 shadow-md gap-4 sm:gap-6" style={{ background: 'linear-gradient(90deg, rgb(223,227,211) 0%, rgb(205,206,242) 100%)' }}>
+              <img src="/onboard/get.png" alt="Get your reservation within 60 seconds" className="w-20 h-20 md:w-24 md:h-24 object-contain bg-transparent flex-shrink-0" />
+              <h3 className="text-lg md:text-xl font-extrabold text-[#191A78] min-w-[140px] md:min-w-[160px] text-center sm:text-left flex-shrink-0">
                 Get your reservation <br className="hidden sm:block"/> within 60 seconds
               </h3>
-              <div className="hidden sm:block border-l-4 border-black h-14 md:h-16 mx-0 sm:mx-4"></div>
-              <p className="text-black font-medium flex-1 text-left text-sm md:text-base">
+              <div className="hidden sm:block border-l-4 border-black h-12 md:h-14 mx-4 flex-shrink-0"></div>
+              <p className="text-black font-medium flex-1 text-center sm:text-left text-sm md:text-base">
                 We deliver your ticket  within minutes. We are the best Onboard tickets. Flexible, fast, and stress-free.
               </p>
             </div>
