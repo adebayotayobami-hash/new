@@ -353,64 +353,59 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
             </div>
 
             {/* Route Selection */}
-            <div>
-              <h3 className="text-2xl font-bold mb-6 text-[#F6F6FF]">Route</h3>
-              
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 relative">
-                    <select
-                      value={fromLocation}
-                      onChange={(e) => handleLocationChange('fromLocation', e.target.value)}
-                      onBlur={() => setFieldTouched('fromLocation', true)}
-                      className={`w-full bg-white border rounded p-4 text-gray-600 appearance-none pr-10 ${
-                        hasFieldError('fromLocation') ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                    >
-                      <option value="">Select departure airport</option>
-                      {airports.map(airport => (
-                        <option key={airport.code} value={airport.code}>
-                          {airport.city} ({airport.code}) - {airport.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-600 pointer-events-none" />
-                    {hasFieldError('fromLocation') && (
-                      <div className="flex items-center gap-1 mt-1 text-red-400 text-sm">
-                        <AlertCircle className="w-4 h-4" />
-                        <span>{getFieldError('fromLocation')}</span>
-                      </div>
-                    )}
-                  </div>
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-[#F6F6FF]">Route</h3>
 
-                  <div className="bg-ticket-secondary rounded p-2">
-                    <Plane className="w-4 h-4 text-white" />
-                  </div>
+              <div className="space-y-6">
+                {/* From Airport */}
+                <div>
+                  <label className="block text-sm font-semibold text-[#F6F6FF] mb-3">
+                    From (Departure Airport) *
+                  </label>
+                  <SearchableAirportDropdown
+                    airports={airports}
+                    value={fromLocation}
+                    onChange={(code) => handleLocationChange('fromLocation', code)}
+                    placeholder="Search departure airport..."
+                    excludeCode={toLocation}
+                    error={hasFieldError('fromLocation')}
+                    className="w-full"
+                  />
+                  {hasFieldError('fromLocation') && (
+                    <div className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>{getFieldError('fromLocation')}</span>
+                    </div>
+                  )}
+                </div>
 
-                  <div className="flex-1 relative">
-                    <select
-                      value={toLocation}
-                      onChange={(e) => handleLocationChange('toLocation', e.target.value)}
-                      onBlur={() => setFieldTouched('toLocation', true)}
-                      className={`w-full bg-white border rounded p-4 text-gray-600 appearance-none pr-10 ${
-                        hasFieldError('toLocation') ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                    >
-                      <option value="">Select destination airport</option>
-                      {airports.filter(airport => airport.code !== fromLocation).map(airport => (
-                        <option key={airport.code} value={airport.code}>
-                          {airport.city} ({airport.code}) - {airport.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-600 pointer-events-none" />
-                    {hasFieldError('toLocation') && (
-                      <div className="flex items-center gap-1 mt-1 text-red-400 text-sm">
-                        <AlertCircle className="w-4 h-4" />
-                        <span>{getFieldError('toLocation')}</span>
-                      </div>
-                    )}
+                {/* Plane Icon Divider */}
+                <div className="flex justify-center">
+                  <div className="bg-ticket-secondary rounded-full p-3">
+                    <Plane className="w-5 h-5 text-white" />
                   </div>
+                </div>
+
+                {/* To Airport */}
+                <div>
+                  <label className="block text-sm font-semibold text-[#F6F6FF] mb-3">
+                    To (Destination Airport) *
+                  </label>
+                  <SearchableAirportDropdown
+                    airports={airports}
+                    value={toLocation}
+                    onChange={(code) => handleLocationChange('toLocation', code)}
+                    placeholder="Search destination airport..."
+                    excludeCode={fromLocation}
+                    error={hasFieldError('toLocation')}
+                    className="w-full"
+                  />
+                  {hasFieldError('toLocation') && (
+                    <div className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>{getFieldError('toLocation')}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
