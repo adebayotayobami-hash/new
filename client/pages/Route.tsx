@@ -498,92 +498,9 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
             )}
           </div>
 
-          {/* Right Side - Ticket Preview */}
-          <div className="flex justify-center lg:justify-end">
-            <div className="bg-white rounded-lg p-8 shadow-2xl w-full max-w-sm">
-              {/* Ticket Header */}
-              <div className="bg-ticket-darker h-16 -mx-8 -mt-8 mb-6 flex items-center justify-center rounded-t-lg">
-                <ArrowRight className="w-8 h-8 text-black" />
-              </div>
-
-              {/* Route Information */}
-              <div className="text-center mb-6">
-                <div className="flex items-center justify-center gap-4 mb-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-black">
-                      ({fromLocation || "RFD"})
-                    </div>
-                    <div className="text-xs font-semibold text-ticket-gray">
-                      {getSelectedAirport(fromLocation)?.city || "Chicago Rockford"}
-                    </div>
-                    <div className="text-xs text-ticket-gray-light">
-                      {departureDate ? new Date(departureDate).toLocaleDateString() : "20/05/2025"}
-                    </div>
-                  </div>
-                  <ArrowRight className="w-8 h-8 text-black" />
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-black">
-                      ({toLocation || "ORY"})
-                    </div>
-                    <div className="text-xs font-semibold text-ticket-gray">
-                      {getSelectedAirport(toLocation)?.city || "Paris Orly"}
-                    </div>
-                    <div className="text-xs text-ticket-gray-light">
-                      {tripType === "roundtrip" && returnDate
-                        ? new Date(returnDate).toLocaleDateString()
-                        : "30/05/2025"}
-                    </div>
-                  </div>
-                </div>
-                {tripType === "roundtrip" && (
-                  <div className="text-xs text-ticket-gray-light">
-                    Round trip • {departureDate && returnDate
-                      ? `${Math.ceil((new Date(returnDate).getTime() - new Date(departureDate).getTime()) / (1000 * 60 * 60 * 24))} days`
-                      : "Duration TBD"}
-                  </div>
-                )}
-              </div>
-
-              {/* Passenger Info */}
-              <div className="mb-6">
-                <div className="text-sm font-semibold text-ticket-text mb-1">Passanger / 1</div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="text-ticket-text font-semibold">Passanger</div>
-                    <div className="font-bold">Mr.Lorem abc</div>
-                  </div>
-                  <div>
-                    <div className="text-ticket-text font-semibold">Flight</div>
-                    <div className="font-bold">$123CD</div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-sm mt-2">
-                  <div>
-                    <div className="text-ticket-text font-semibold">Seat</div>
-                    <div className="font-bold">20C</div>
-                  </div>
-                  <div>
-                    <div className="text-ticket-text font-semibold">Departure</div>
-                    <div className="font-bold">7:30 AM</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Barcode */}
-              <div className="flex justify-center">
-                <div className="flex gap-1">
-                  {[...Array(15)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className="w-1 bg-black" 
-                      style={{ 
-                        height: `${Math.random() * 20 + 10}px` 
-                      }}
-                    ></div>
-                  ))}
-                </div>
-              </div>
-            </div>
+          {/* Right Side - Booking Sidebar */}
+          <div className="lg:col-span-1">
+            <BookingSidebar currentStep={currentStep} />
           </div>
         </div>
       </div>
