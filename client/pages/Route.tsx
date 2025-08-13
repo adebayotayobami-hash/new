@@ -3,6 +3,7 @@ import { ArrowRight, Plane, ChevronDown, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "../components/DatePicker";
 import SearchableAirportDropdown from "../components/SearchableAirportDropdown";
+import BookingSidebar from "../components/BookingSidebar";
 import { useFormValidation, CommonValidationRules } from "../hooks/useFormValidation";
 import { Airport, FlightRoute } from "@shared/api";
 import { supabaseHelpers } from "../lib/supabaseClient";
