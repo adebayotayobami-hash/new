@@ -239,9 +239,9 @@ export default function Passengers({ onNext, onBack, currentStep, onNavigate }: 
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Left Side - Form */}
-          <div className="space-y-8">
+          <div className="lg:col-span-2 space-y-8">
             {/* Passenger Section */}
             <div>
               <h2 className="text-2xl font-bold mb-8 text-[#F6F6FF]">Passenger</h2>
