@@ -408,84 +408,9 @@ export default function Passengers({ onNext, onBack, currentStep, onNavigate }: 
             </div>
           </div>
 
-          {/* Right Side - Ticket Preview */}
-          <div className="flex justify-center lg:justify-end">
-            <div className="bg-white rounded-lg p-8 shadow-2xl w-full max-w-sm">
-              {/* Ticket Header */}
-              <div className="bg-ticket-darker h-16 -mx-8 -mt-8 mb-6 flex items-center justify-center rounded-t-lg">
-                <ArrowRight className="w-8 h-8 text-black" />
-              </div>
-
-              {/* Route Information */}
-              <div className="text-center mb-6">
-                <div className="flex items-center justify-center gap-4 mb-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-black">(RFD)</div>
-                    <div className="text-xs font-semibold text-ticket-gray">Chicago Rockford</div>
-                    <div className="text-xs text-ticket-gray-light">20/05/205</div>
-                  </div>
-                  <ArrowRight className="w-8 h-8 text-black" />
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-black">(ORY)</div>
-                    <div className="text-xs font-semibold text-ticket-gray">Paris Orly</div>
-                    <div className="text-xs text-ticket-gray-light">30/05/205</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Passenger Info */}
-              <div className="mb-6">
-                <div className="text-sm font-semibold text-ticket-text mb-1">
-                  Passenger{passengers.length > 1 ? 's' : ''} / {passengers.length}
-                </div>
-                {passengers.slice(0, 2).map((passenger, index) => (
-                  <div key={index} className="mb-4 last:mb-0">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <div className="text-ticket-text font-semibold">Passenger {index + 1}</div>
-                        <div className="font-bold">
-                          {passenger.title || "Mr"}.{passenger.firstName || "First"} {passenger.lastName || "Last"}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-ticket-text font-semibold">Flight</div>
-                        <div className="font-bold">$10 USD</div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm mt-2">
-                      <div>
-                        <div className="text-ticket-text font-semibold">Seat</div>
-                        <div className="font-bold">{20 + index}C</div>
-                      </div>
-                      <div>
-                        <div className="text-ticket-text font-semibold">Departure</div>
-                        <div className="font-bold">7:30 AM</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {passengers.length > 2 && (
-                  <div className="text-xs text-ticket-gray-light mt-2">
-                    + {passengers.length - 2} more passenger{passengers.length - 2 > 1 ? 's' : ''}
-                  </div>
-                )}
-              </div>
-
-              {/* Barcode */}
-              <div className="flex justify-center">
-                <div className="flex gap-1">
-                  {[...Array(15)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className="w-1 bg-black" 
-                      style={{ 
-                        height: `${Math.random() * 20 + 10}px` 
-                      }}
-                    ></div>
-                  ))}
-                </div>
-              </div>
-            </div>
+          {/* Right Side - Booking Sidebar */}
+          <div className="lg:col-span-1">
+            <BookingSidebar currentStep={currentStep} />
           </div>
         </div>
       </div>
