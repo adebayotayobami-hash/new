@@ -575,43 +575,43 @@ const Index = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 lg:gap-12">
             {/* Card 1 */}
-            <div className="relative flex flex-col justify-between h-56 sm:h-64 md:h-72 lg:h-80 rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 w-full shadow-lg text-left overflow-hidden bg-gradient-to-r from-[#e3e3f1] to-[#cacbef]">
+            <div className="relative flex flex-col justify-between h-48 sm:h-52 md:h-56 lg:h-60 rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 w-full shadow-lg text-left overflow-hidden bg-gradient-to-r from-[#e3e3f1] to-[#cacbef]">
               <div className="flex items-center mb-2 sm:mb-3 md:mb-4">
-                <img src="/onboard/image.png" alt="British Embassy" className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-20 lg:h-20 object-contain mr-2 sm:mr-3 md:mr-4" />
-                <h5 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-[#191A78] mb-2 sm:mb-3 md:mb-4 tracking-tight font-jakarta text-left break-words leading-tight">British Embassy</h5>
+                <img src="/onboard/image.png" alt="British Embassy" className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 object-contain mr-2 sm:mr-3 md:mr-3" />
+                <h5 className="text-base sm:text-lg md:text-xl lg:text-2xl font-extrabold text-[#191A78] mb-0 tracking-tight font-jakarta text-left break-words leading-tight">British Embassy</h5>
               </div>
               <div className="mb-2 sm:mb-3 md:mb-4 flex-1 flex items-center">
-                <p className="text-black text-xs sm:text-sm md:text-base lg:text-lg font-medium break-words leading-snug">
+                <p className="text-black text-xs sm:text-sm md:text-sm lg:text-base font-medium break-words leading-snug">
                   Most embassies encourage travelers to wait for visa approval before purchasing a full-priced plane ticket
                 </p>
               </div>
-              <button className="absolute left-3 sm:left-4 md:left-6 bottom-3 sm:bottom-4 md:bottom-6 font-bold text-[#233789] bg-transparent border-none text-xs sm:text-sm md:text-base">See More?</button>
+              <button className="absolute left-3 sm:left-4 md:left-6 bottom-3 sm:bottom-4 md:bottom-6 font-bold text-[#233789] bg-transparent border-none text-xs sm:text-sm md:text-sm">See More?</button>
             </div>
             {/* Card 2 */}
-            <div className="relative flex flex-col justify-between h-56 sm:h-64 md:h-72 lg:h-80 rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 w-full shadow-lg text-left overflow-hidden bg-gradient-to-r from-[#e1d3bb] to-[#cacbef]">
+            <div className="relative flex flex-col justify-between h-48 sm:h-52 md:h-56 lg:h-60 rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 w-full shadow-lg text-left overflow-hidden bg-gradient-to-r from-[#e1d3bb] to-[#cacbef]">
               <div className="flex items-center mb-2 sm:mb-3 md:mb-4">
-                <img src="/onboard/spanish.png" alt="Spanish Embassy" className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-20 lg:h-20 object-contain mr-2 sm:mr-3 md:mr-4" />
-                <h5 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-[#191A78] mb-2 sm:mb-3 md:mb-4 tracking-tight font-jakarta text-left break-words leading-tight">Spanish Embassy</h5>
+                <img src="/onboard/spanish.png" alt="Spanish Embassy" className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 object-contain mr-2 sm:mr-3 md:mr-3" />
+                <h5 className="text-base sm:text-lg md:text-xl lg:text-2xl font-extrabold text-[#191A78] mb-0 tracking-tight font-jakarta text-left break-words leading-tight">Spanish Embassy</h5>
               </div>
               <div className="mb-2 sm:mb-3 md:mb-4 flex-1 flex items-center">
-                <p className="text-black text-xs sm:text-sm md:text-base lg:text-lg font-medium break-words leading-snug">
+                <p className="text-black text-xs sm:text-sm md:text-sm lg:text-base font-medium break-words leading-snug">
                   Most embassies encourage travelers to wait for visa approval before purchasing a full-priced plane ticket
                 </p>
               </div>
-              <button className="absolute left-3 sm:left-4 md:left-6 bottom-3 sm:bottom-4 md:bottom-6 font-bold text-[#233789] bg-transparent border-none text-xs sm:text-sm md:text-base">Spanish Embassy</button>
+              <button className="absolute left-3 sm:left-4 md:left-6 bottom-3 sm:bottom-4 md:bottom-6 font-bold text-[#233789] bg-transparent border-none text-xs sm:text-sm md:text-sm">Spanish Embassy</button>
             </div>
             {/* Card 3 */}
-            <div className="relative flex flex-col justify-between h-56 sm:h-64 md:h-72 lg:h-80 rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 w-full shadow-lg text-left overflow-hidden bg-gradient-to-r from-[#dfc3d2] to-[#9796e4]">
+            <div className="relative flex flex-col justify-between h-48 sm:h-52 md:h-56 lg:h-60 rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 w-full shadow-lg text-left overflow-hidden bg-gradient-to-r from-[#dfc3d2] to-[#9796e4]">
               <div className="flex items-center mb-2 sm:mb-3 md:mb-4">
-                <img src="/onboard/iceland.png" alt="Iceland Embassy" className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-20 lg:h-20 object-contain mr-2 sm:mr-3 md:mr-4" />
-                <h5 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-[#191A78] mb-2 sm:mb-3 md:mb-4 tracking-tight font-jakarta text-left break-words leading-tight">Iceland Embassy</h5>
+                <img src="/onboard/iceland.png" alt="Iceland Embassy" className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 object-contain mr-2 sm:mr-3 md:mr-3" />
+                <h5 className="text-base sm:text-lg md:text-xl lg:text-2xl font-extrabold text-[#191A78] mb-0 tracking-tight font-jakarta text-left break-words leading-tight">Iceland Embassy</h5>
               </div>
               <div className="mb-2 sm:mb-3 md:mb-4 flex-1 flex items-center">
-                <p className="text-black text-xs sm:text-sm md:text-base lg:text-lg font-medium break-words leading-snug">
+                <p className="text-black text-xs sm:text-sm md:text-sm lg:text-base font-medium break-words leading-snug">
                   Most embassies encourage travelers to wait for visa approval before purchasing a full-priced plane ticket
                 </p>
               </div>
-              <button className="absolute left-3 sm:left-4 md:left-6 bottom-3 sm:bottom-4 md:bottom-6 font-bold text-[#233789] bg-transparent border-none text-xs sm:text-sm md:text-base">Iceland Embassy</button>
+              <button className="absolute left-3 sm:left-4 md:left-6 bottom-3 sm:bottom-4 md:bottom-6 font-bold text-[#233789] bg-transparent border-none text-xs sm:text-sm md:text-sm">Iceland Embassy</button>
             </div>
           </div>
         </div>
