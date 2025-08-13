@@ -322,19 +322,19 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Left Side - Form */}
-          <div className="space-y-8">
+          <div className="lg:col-span-2 space-y-8">
             {/* Trip Type Selection */}
             <div>
               <h2 className="text-2xl font-bold mb-8 text-[#F6F6FF]">Route</h2>
-              
+
               <div className="flex gap-0 mb-8 max-w-md">
                 <button
                   onClick={() => setTripType("oneway")}
                   className={`flex-1 py-3 px-6 text-sm font-semibold rounded-l-lg transition-colors ${
-                    tripType === "oneway" 
-                      ? "bg-ticket-dark text-white" 
+                    tripType === "oneway"
+                      ? "bg-ticket-dark text-white"
                       : "bg-ticket-secondary text-white"
                   }`}
                 >
@@ -343,8 +343,8 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
                 <button
                   onClick={() => setTripType("roundtrip")}
                   className={`flex-1 py-3 px-6 text-sm font-semibold rounded-r-lg transition-colors ${
-                    tripType === "roundtrip" 
-                      ? "bg-ticket-dark text-white" 
+                    tripType === "roundtrip"
+                      ? "bg-ticket-dark text-white"
                       : "bg-ticket-secondary text-white"
                   }`}
                 >
