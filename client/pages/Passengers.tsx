@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Plus, ArrowRight, Mail, AlertCircle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import BookingSidebar from "../components/BookingSidebar";
 import { useFormValidation, CommonValidationRules } from "../hooks/useFormValidation";
 import { Passenger } from "@shared/api";
 
