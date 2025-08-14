@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronDown,
   Navigation,
@@ -8,72 +8,75 @@ import {
   Instagram,
   User,
   LogOut,
+  Menu,
+  X,
 } from "lucide-react";
 import TestimonialCarousel from "../components/ui/TestimonialCarousel";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { checkServicesOnLoad } from "../lib/serviceStatusChecker";
 
 const testimonials = [
   {
     name: "Daniel Ricciardo",
     role: "Businessman",
     text: "The experience of booking airfare through this website was amazing! The intuitive interface, wide selection of routes, and fast transaction process made my trip more enjoyable.",
-    img: "https://api.builder.io/api/v1/image/assets/TEMP/f4f31fe52ad073d5757f8f9684b13989bf5401c7?width=112"
+    img: "https://api.builder.io/api/v1/image/assets/TEMP/f4f31fe52ad073d5757f8f9684b13989bf5401c7?width=112",
   },
   {
     name: "Sophia Lee",
     role: "Student",
     text: "Super fast and reliable! Got my reservation in minutes and it worked perfectly for my visa application.",
-    img: "https://randomuser.me/api/portraits/women/44.jpg"
+    img: "https://randomuser.me/api/portraits/women/44.jpg",
   },
   {
     name: "John Smith",
     role: "Frequent Traveler",
     text: "Affordable and trustworthy. I use this service every time I need proof of onward travel.",
-    img: "https://randomuser.me/api/portraits/men/32.jpg"
+    img: "https://randomuser.me/api/portraits/men/32.jpg",
   },
   {
     name: "Maria Garcia",
     role: "Digital Nomad",
     text: "The support team is fantastic and the process is seamless. Highly recommended!",
-    img: "https://randomuser.me/api/portraits/women/65.jpg"
+    img: "https://randomuser.me/api/portraits/women/65.jpg",
   },
   {
     name: "Ahmed Hassan",
     role: "Entrepreneur",
     text: "I was skeptical at first, but the reservation was real and verifiable. Great value!",
-    img: "https://randomuser.me/api/portraits/men/76.jpg"
+    img: "https://randomuser.me/api/portraits/men/76.jpg",
   },
   {
     name: "Emily Chen",
     role: "Backpacker",
     text: "Perfect for last-minute travel needs. The process is quick and easy.",
-    img: "https://randomuser.me/api/portraits/women/68.jpg"
+    img: "https://randomuser.me/api/portraits/women/68.jpg",
   },
   {
     name: "Carlos Ruiz",
     role: "Tourist",
     text: "I got my ticket instantly and it was accepted at the embassy. Will use again!",
-    img: "https://randomuser.me/api/portraits/men/41.jpg"
+    img: "https://randomuser.me/api/portraits/men/41.jpg",
   },
   {
     name: "Priya Patel",
     role: "Consultant",
     text: "The best service for onward tickets. The customer support is responsive and helpful.",
-    img: "https://randomuser.me/api/portraits/women/12.jpg"
+    img: "https://randomuser.me/api/portraits/women/12.jpg",
   },
   {
     name: "Liam O'Connor",
     role: "Remote Worker",
     text: "Easy to use and very affordable. I recommend it to all my friends.",
-    img: "https://randomuser.me/api/portraits/men/23.jpg"
+    img: "https://randomuser.me/api/portraits/men/23.jpg",
   },
   {
     name: "Fatima Zahra",
     role: "Student",
     text: "Helped me get my visa without any hassle. Thank you!",
-    img: "https://randomuser.me/api/portraits/women/50.jpg"
-  }
+    img: "https://randomuser.me/api/portraits/women/50.jpg",
+  },
 ];
 
 const Index = () => {
@@ -81,11 +84,48 @@ const Index = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const [testimonialIdxLeft, setTestimonialIdxLeft] = useState(0);
   const [testimonialIdxRight, setTestimonialIdxRight] = useState(1);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const totalTestimonials = testimonials.length;
-  const prevTestimonialLeft = () => setTestimonialIdxLeft((testimonialIdxLeft - 1 + totalTestimonials) % totalTestimonials);
-  const nextTestimonialLeft = () => setTestimonialIdxLeft((testimonialIdxLeft + 1) % totalTestimonials);
-  const prevTestimonialRight = () => setTestimonialIdxRight((testimonialIdxRight - 1 + totalTestimonials) % totalTestimonials);
-  const nextTestimonialRight = () => setTestimonialIdxRight((testimonialIdxRight + 1) % totalTestimonials);
+  const prevTestimonialLeft = () =>
+    setTestimonialIdxLeft(
+      (testimonialIdxLeft - 1 + totalTestimonials) % totalTestimonials,
+    );
+  const nextTestimonialLeft = () =>
+    setTestimonialIdxLeft((testimonialIdxLeft + 1) % totalTestimonials);
+  const prevTestimonialRight = () =>
+    setTestimonialIdxRight(
+      (testimonialIdxRight - 1 + totalTestimonials) % totalTestimonials,
+    );
+  const nextTestimonialRight = () =>
+    setTestimonialIdxRight((testimonialIdxRight + 1) % totalTestimonials);
+
+  // Auto-slide testimonials every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTestimonialIdxRight((prev) => (prev + 1) % totalTestimonials);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [totalTestimonials]);
+
+  // Check external services status on app load
+  useEffect(() => {
+    // Add a small delay to ensure the app is fully loaded
+    const timeoutId = setTimeout(() => {
+      checkServicesOnLoad();
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  // Close mobile menu when clicking outside or on navigation
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  // Handle mobile menu navigation
+  const handleMobileNavigation = (path: string) => {
+    navigate(path);
+    closeMobileMenu();
+  };
 
   // Helper function to handle Book Now navigation
   const handleBookNow = () => {
@@ -99,21 +139,24 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-[#E7E9FF] font-jakarta overflow-x-hidden px-4 md:px-16 py-4 md:py-16">
       {/* Header */}
-      <header className="container mx-auto px-4 md:px-12 py-2 md:py-4">
+      <header className="container mx-auto px-4 md:px-12 py-2 md:py-4 relative">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => navigate("/")}
+          >
             <img
               src="/onboard/result.png"
               alt="OnboardTicket Logo"
-              className="h-14 md:h-24 w-auto max-w-[220px] md:max-w-[320px] object-contain cursor-pointer"
+              className="h-12 sm:h-14 md:h-24 w-auto max-w-[200px] sm:max-w-[220px] md:max-w-[320px] object-contain cursor-pointer"
               loading="eager"
               onClick={() => navigate("/")}
             />
           </div>
 
-          {/* Navigation */}
-          <div className="hidden md:flex items-center gap-4 md:gap-8">
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center gap-4 md:gap-8">
             <button
               className="px-8 py-2 text-brand-text-primary font-bold text-base md:text-lg hover:bg-gray-100 rounded-lg transition-colors shadow-none"
               onClick={() => navigate("/contact")}
@@ -157,7 +200,115 @@ const Index = () => {
               </div>
             )}
           </div>
+
+          {/* Mobile Hamburger Menu Button */}
+          <button
+            className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-white shadow-md hover:bg-gray-50 transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle mobile menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6 text-brand-text-primary" />
+            ) : (
+              <Menu className="w-6 h-6 text-brand-text-primary" />
+            )}
+          </button>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+              onClick={closeMobileMenu}
+            />
+
+            {/* Mobile Menu */}
+            <div className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-b-2xl z-50 lg:hidden border-t border-gray-100">
+              <div className="p-6 space-y-4">
+                {/* Get Support */}
+                <button
+                  className="w-full text-left py-3 px-4 text-brand-text-primary font-bold text-lg hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-3"
+                  onClick={() => handleMobileNavigation("/contact")}
+                >
+                  <Navigation className="w-5 h-5" />
+                  Get Support
+                </button>
+
+                {isAuthenticated ? (
+                  <>
+                    {/* Dashboard */}
+                    <button
+                      className="w-full text-left py-3 px-4 bg-[#3839C9] text-white font-bold text-lg rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-3"
+                      onClick={() => handleMobileNavigation("/dashboard")}
+                    >
+                      <User className="w-5 h-5" />
+                      Dashboard
+                    </button>
+
+                    {/* Logout */}
+                    <button
+                      className="w-full text-left py-3 px-4 text-brand-text-primary font-bold text-lg hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-3"
+                      onClick={() => {
+                        logout();
+                        handleMobileNavigation("/");
+                      }}
+                    >
+                      <LogOut className="w-5 h-5" />
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Sign In */}
+                    <button
+                      className="w-full text-left py-3 px-4 text-brand-text-primary font-bold text-lg hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-3"
+                      onClick={() => handleMobileNavigation("/login")}
+                    >
+                      <User className="w-5 h-5" />
+                      Sign In
+                    </button>
+
+                    {/* Book Now */}
+                    <button
+                      className="w-full text-left py-3 px-4 bg-[#3839C9] text-white font-bold text-lg rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-3"
+                      onClick={() => {
+                        handleBookNow();
+                        closeMobileMenu();
+                      }}
+                    >
+                      <Navigation className="w-5 h-5" />
+                      Book Now
+                    </button>
+                  </>
+                )}
+
+                {/* Additional Mobile Menu Items */}
+                <div className="border-t border-gray-200 pt-4 mt-4">
+                  <button
+                    className="w-full text-left py-3 px-4 text-brand-text-primary font-semibold text-base hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => handleMobileNavigation("/about")}
+                  >
+                    About Us
+                  </button>
+                  <button
+                    className="w-full text-left py-3 px-4 text-brand-text-primary font-semibold text-base hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => handleMobileNavigation("/faq")}
+                  >
+                    FAQ
+                  </button>
+                  <button
+                    className="w-full text-left py-3 px-4 text-brand-text-primary font-semibold text-base hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => handleMobileNavigation("/contact")}
+                  >
+                    Contact
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </header>
 
       {/* Hero Section */}
@@ -183,8 +334,7 @@ const Index = () => {
               </button>
 
               <p className="text-xs md:text-sm font-bold text-[#637996] mt-4 md:mt-6">
-                Instant & secure Booking from
-                Just $15
+                Instant & secure Booking from Just $15
               </p>
             </div>
             {/* Image on the right (show after content on mobile and up to lg) */}
@@ -245,19 +395,22 @@ const Index = () => {
           <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
             {/* Fast Reservation */}
             <div className="relative flex flex-col justify-center h-52 sm:h-52 md:h-56">
-              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg overflow-hidden">
-                <div className="bg-transparent rounded-full w-32 h-32 md:w-56 md:h-56 flex items-center justify-center mr-4 md:mr-6 shrink-0">
+              <div className="gradient-box rounded-2xl p-4 sm:p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg overflow-hidden">
+                <div className="bg-transparent rounded-full w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 flex items-center justify-center mr-3 sm:mr-4 md:mr-6 shrink-0">
                   <img
                     src="/onboard/fast.png"
                     alt="Fast Reservation Icon"
                     className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
                   />
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <h3 className="text-xl md:text-3xl font-extrabold text-white mb-2 font-jakarta ">
+                  <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white mb-2 font-jakarta">
                     Fast Reservation
                   </h3>
-                  <p className="text-white text-sm md:text-lg font-semibold font-jakarta break-words">
+                  <p className="text-white text-xs sm:text-sm md:text-base lg:text-lg font-semibold font-jakarta break-words">
                     Arrives instantly via email. No delay or stress (cue sigh of
                     relief!).
                   </p>
@@ -266,20 +419,22 @@ const Index = () => {
             </div>
             {/* Secure & Easy */}
             <div className="relative flex flex-col justify-center h-52 sm:h-52 md:h-56">
-              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg overflow-hidden">
-                <div className="flex items-center justify-center mr-4 md:mr-6 shrink-0">
+              <div className="gradient-box rounded-2xl p-4 sm:p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg overflow-hidden">
+                <div className="flex items-center justify-center mr-3 sm:mr-4 md:mr-6 shrink-0">
                   <img
                     src="/onboard/secure.png"
                     alt="Secure Icon"
-                    className="w-32 h-32 md:w-56 md:h-56 object-contain"
-                    style={{ background: 'none' }}
+                    className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
                   />
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <h3 className="text-xl md:text-3xl font-extrabold text-white mb-2 font-jakarta ">
+                  <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white mb-2 font-jakarta">
                     Secure & Easy
                   </h3>
-                  <p className="text-white text-sm md:text-lg font-semibold font-jakarta break-words">
+                  <p className="text-white text-xs sm:text-sm md:text-base lg:text-lg font-semibold font-jakarta break-words">
                     Arrives instantly via email. No delay or stress (cue sigh of
                     relief!).
                   </p>
@@ -288,20 +443,22 @@ const Index = () => {
             </div>
             {/* Verifiable */}
             <div className="relative flex flex-col justify-center h-52 sm:h-52 md:h-56">
-              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg overflow-hidden">
-                <div className="flex items-center justify-center mr-4 md:mr-6 shrink-0">
+              <div className="gradient-box rounded-2xl p-4 sm:p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg overflow-hidden">
+                <div className="flex items-center justify-center mr-3 sm:mr-4 md:mr-6 shrink-0">
                   <img
                     src="/onboard/verifiable.png"
                     alt="Verified Icon"
-                    className="w-32 h-32 md:w-56 md:h-56 object-contain"
-                    style={{ background: 'none' }}
+                    className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
                   />
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <h3 className="text-xl md:text-3xl font-extrabold text-white mb-2 font-jakarta ">
+                  <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white mb-2 font-jakarta">
                     Verifiable
                   </h3>
-                  <p className="text-white text-sm md:text-lg font-semibold font-jakarta break-words">
+                  <p className="text-white text-xs sm:text-sm md:text-base lg:text-lg font-semibold font-jakarta break-words">
                     Arrives instantly via email. No delay or stress (cue sigh of
                     relief!).
                   </p>
@@ -310,20 +467,22 @@ const Index = () => {
             </div>
             {/* Save Money */}
             <div className="relative flex flex-col justify-center h-52 sm:h-52 md:h-56">
-              <div className="gradient-box-pink rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg overflow-hidden">
-                <div className="flex items-center justify-center mr-4 md:mr-6 shrink-0">
+              <div className="gradient-box-pink rounded-2xl p-4 sm:p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg overflow-hidden">
+                <div className="flex items-center justify-center mr-3 sm:mr-4 md:mr-6 shrink-0">
                   <img
                     src="/onboard/save.png"
                     alt="Wallet Icon"
-                    className="w-32 h-32 md:w-56 md:h-56 object-contain"
-                    style={{ background: 'none' }}
+                    className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
                   />
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <h3 className="text-xl md:text-3xl font-extrabold text-white mb-2 font-jakarta ">
+                  <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white mb-2 font-jakarta">
                     Save Money
                   </h3>
-                  <p className="text-white text-sm md:text-lg font-semibold font-jakarta break-words">
+                  <p className="text-white text-xs sm:text-sm md:text-base lg:text-lg font-semibold font-jakarta break-words">
                     Arrives instantly via email. No delay or stress (cue sigh of
                     relief!).
                   </p>
@@ -397,34 +556,24 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Navigation Buttons */}
-              <div className="flex gap-2 md:gap-4 justify-center lg:justify-start mt-2 md:mt-4">
-                <button className="w-8 h-8 md:w-14 md:h-8 bg-[#A49AFF] rounded-full flex items-center justify-center hover:bg-purple-400 transition-colors" onClick={prevTestimonialLeft}>
-                  <ArrowLeft className="w-4 h-4 text-white" />
-                </button>
-                <button className="w-8 h-8 md:w-14 md:h-8 bg-[#878EFF] rounded-full flex items-center justify-center hover:bg-purple-500 transition-colors" onClick={nextTestimonialLeft}>
-                  <ArrowRight className="w-4 h-4 text-white" />
-                </button>
-              </div>
             </div>
 
-            {/* Right Card - Independent Testimonial */}
+            {/* Right Card - Auto-sliding Testimonial */}
             <div className="grid grid-cols-1 gap-8 md:gap-12 items-center">
               <div className="space-y-6 md:space-y-8">
-                <div className="text-center lg:text-left bg-white/90 rounded-2xl shadow-lg p-8 md:p-12">
-                  <blockquote className="text-base md:text-xl font-semibold text-[#20242A] mb-4 md:mb-8 leading-relaxed">
+                <div className="text-center lg:text-left bg-white/90 rounded-2xl shadow-lg p-8 md:p-12 transition-all duration-500 ease-in-out">
+                  <blockquote className="text-base md:text-xl font-semibold text-[#20242A] mb-4 md:mb-8 leading-relaxed transition-opacity duration-300">
                     "{testimonials[testimonialIdxRight].text}"
                   </blockquote>
                   <div className="flex items-center gap-2 md:gap-4 justify-center lg:justify-start">
-                    <div className="w-10 h-10 md:w-16 md:h-16 bg-[#9BF1D5] rounded-full flex items-center justify-center overflow-hidden">
+                    <div className="w-10 h-10 md:w-16 md:h-16 bg-[#9BF1D5] rounded-full flex items-center justify-center overflow-hidden transition-all duration-300">
                       <img
                         src={testimonials[testimonialIdxRight].img}
                         alt="Profile"
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div>
+                    <div className="transition-all duration-300">
                       <h4 className="font-semibold text-[#20242A] text-sm md:text-base">
                         {testimonials[testimonialIdxRight].name}
                       </h4>
@@ -433,13 +582,18 @@ const Index = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2 md:gap-4 justify-center lg:justify-start mt-4">
-                    <button className="w-8 h-8 md:w-14 md:h-8 bg-[#A49AFF] rounded-full flex items-center justify-center hover:bg-purple-400 transition-colors" onClick={prevTestimonialRight}>
-                      <ArrowLeft className="w-4 h-4 text-white" />
-                    </button>
-                    <button className="w-8 h-8 md:w-14 md:h-8 bg-[#878EFF] rounded-full flex items-center justify-center hover:bg-purple-500 transition-colors" onClick={nextTestimonialRight}>
-                      <ArrowRight className="w-4 h-4 text-white" />
-                    </button>
+                  {/* Auto-sliding indicator */}
+                  <div className="flex justify-center mt-4 gap-2">
+                    {testimonials.slice(0, 5).map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                          index === testimonialIdxRight % 5
+                            ? "bg-[#878EFF] w-6"
+                            : "bg-gray-300"
+                        }`}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
@@ -570,48 +724,85 @@ const Index = () => {
             More flexibility while securing your visa
           </h2>
           <p className="text-sm sm:text-base md:text-lg lg:text-2xl text-[#8A8A8F] mb-4 sm:mb-6 md:mb-8 lg:mb-16 font-light font-jakarta text-left">
-            Most embassies encourage travelers to wait for visa approval before purchasing a full priced plane ticket
+            Most embassies encourage travelers to wait for visa approval before
+            purchasing a full priced plane ticket
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-6 lg:gap-8 items-start">
             {/* Card 1 */}
-            <div className="relative flex flex-col justify-between h-56 sm:h-64 md:h-72 lg:h-80 rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 w-full shadow-lg text-left overflow-hidden bg-gradient-to-r from-[#e3e3f1] to-[#cacbef]">
-              <div className="flex items-center mb-2 sm:mb-3 md:mb-4">
-                <img src="/onboard/image.png" alt="British Embassy" className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-20 lg:h-20 object-contain mr-2 sm:mr-3 md:mr-4" />
-                <h5 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-[#191A78] mb-2 sm:mb-3 md:mb-4 tracking-tight font-jakarta text-left break-words leading-tight">British Embassy</h5>
+            <div className="relative flex flex-col h-48 sm:h-52 md:h-56 lg:h-60 rounded-2xl p-3 sm:p-4 md:p-4 lg:p-6 w-full shadow-lg text-left overflow-hidden bg-gradient-to-r from-[#e3e3f1] to-[#cacbef]">
+              <div className="flex items-center mb-2 sm:mb-3 md:mb-3">
+                <img
+                  src="/onboard/image.png"
+                  alt="British Embassy"
+                  className="w-6 h-6 sm:w-8 sm:h-8 md:w-8 md:h-8 lg:w-10 lg:h-10 object-contain mr-2 sm:mr-3 md:mr-2 flex-shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+                <h5 className="text-sm sm:text-base md:text-base lg:text-lg font-extrabold text-[#191A78] mb-0 tracking-tight font-jakarta text-left break-words leading-tight">
+                  British Embassy
+                </h5>
               </div>
-              <div className="mb-2 sm:mb-3 md:mb-4 flex-1 flex items-center">
-                <p className="text-black text-xs sm:text-sm md:text-base lg:text-lg font-medium break-words leading-snug">
-                  Most embassies encourage travelers to wait for visa approval before purchasing a full-priced plane ticket
+              <div className="flex-1 flex items-start mb-6 sm:mb-8 md:mb-8">
+                <p className="text-black text-xs sm:text-sm md:text-xs lg:text-sm font-medium break-words leading-snug">
+                  Most embassies encourage travelers to wait for visa approval
+                  before purchasing a full-priced plane ticket
                 </p>
               </div>
-              <button className="absolute left-3 sm:left-4 md:left-6 bottom-3 sm:bottom-4 md:bottom-6 font-bold text-[#233789] bg-transparent border-none text-xs sm:text-sm md:text-base">See More?</button>
+              <button className="absolute left-3 sm:left-4 md:left-4 lg:left-6 bottom-3 sm:bottom-4 md:bottom-4 lg:bottom-6 font-bold text-[#233789] bg-transparent border-none text-xs sm:text-sm md:text-xs">
+                See More?
+              </button>
             </div>
             {/* Card 2 */}
-            <div className="relative flex flex-col justify-between h-56 sm:h-64 md:h-72 lg:h-80 rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 w-full shadow-lg text-left overflow-hidden bg-gradient-to-r from-[#e1d3bb] to-[#cacbef]">
-              <div className="flex items-center mb-2 sm:mb-3 md:mb-4">
-                <img src="/onboard/spanish.png" alt="Spanish Embassy" className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-20 lg:h-20 object-contain mr-2 sm:mr-3 md:mr-4" />
-                <h5 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-[#191A78] mb-2 sm:mb-3 md:mb-4 tracking-tight font-jakarta text-left break-words leading-tight">Spanish Embassy</h5>
+            <div className="relative flex flex-col h-48 sm:h-52 md:h-56 lg:h-60 rounded-2xl p-3 sm:p-4 md:p-4 lg:p-6 w-full shadow-lg text-left overflow-hidden bg-gradient-to-r from-[#e1d3bb] to-[#cacbef]">
+              <div className="flex items-center mb-2 sm:mb-3 md:mb-3">
+                <img
+                  src="/onboard/spanish.png"
+                  alt="Spanish Embassy"
+                  className="w-6 h-6 sm:w-8 sm:h-8 md:w-8 md:h-8 lg:w-10 lg:h-10 object-contain mr-2 sm:mr-3 md:mr-2 flex-shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+                <h5 className="text-sm sm:text-base md:text-base lg:text-lg font-extrabold text-[#191A78] mb-0 tracking-tight font-jakarta text-left break-words leading-tight">
+                  Spanish Embassy
+                </h5>
               </div>
-              <div className="mb-2 sm:mb-3 md:mb-4 flex-1 flex items-center">
-                <p className="text-black text-xs sm:text-sm md:text-base lg:text-lg font-medium break-words leading-snug">
-                  Most embassies encourage travelers to wait for visa approval before purchasing a full-priced plane ticket
+              <div className="flex-1 flex items-start mb-6 sm:mb-8 md:mb-8">
+                <p className="text-black text-xs sm:text-sm md:text-xs lg:text-sm font-medium break-words leading-snug">
+                  Most embassies encourage travelers to wait for visa approval
+                  before purchasing a full-priced plane ticket
                 </p>
               </div>
-              <button className="absolute left-3 sm:left-4 md:left-6 bottom-3 sm:bottom-4 md:bottom-6 font-bold text-[#233789] bg-transparent border-none text-xs sm:text-sm md:text-base">Spanish Embassy</button>
+              <button className="absolute left-3 sm:left-4 md:left-4 lg:left-6 bottom-3 sm:bottom-4 md:bottom-4 lg:bottom-6 font-bold text-[#233789] bg-transparent border-none text-xs sm:text-sm md:text-xs">
+                Spanish Embassy
+              </button>
             </div>
             {/* Card 3 */}
-            <div className="relative flex flex-col justify-between h-56 sm:h-64 md:h-72 lg:h-80 rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 w-full shadow-lg text-left overflow-hidden bg-gradient-to-r from-[#dfc3d2] to-[#9796e4]">
-              <div className="flex items-center mb-2 sm:mb-3 md:mb-4">
-                <img src="/onboard/iceland.png" alt="Iceland Embassy" className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-20 lg:h-20 object-contain mr-2 sm:mr-3 md:mr-4" />
-                <h5 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-[#191A78] mb-2 sm:mb-3 md:mb-4 tracking-tight font-jakarta text-left break-words leading-tight">Iceland Embassy</h5>
+            <div className="relative flex flex-col h-48 sm:h-52 md:h-56 lg:h-60 rounded-2xl p-3 sm:p-4 md:p-4 lg:p-6 w-full shadow-lg text-left overflow-hidden bg-gradient-to-r from-[#dfc3d2] to-[#9796e4]">
+              <div className="flex items-center mb-2 sm:mb-3 md:mb-3">
+                <img
+                  src="/onboard/iceland.png"
+                  alt="Iceland Embassy"
+                  className="w-6 h-6 sm:w-8 sm:h-8 md:w-8 md:h-8 lg:w-10 lg:h-10 object-contain mr-2 sm:mr-3 md:mr-2 flex-shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+                <h5 className="text-sm sm:text-base md:text-base lg:text-lg font-extrabold text-[#191A78] mb-0 tracking-tight font-jakarta text-left break-words leading-tight">
+                  Iceland Embassy
+                </h5>
               </div>
-              <div className="mb-2 sm:mb-3 md:mb-4 flex-1 flex items-center">
-                <p className="text-black text-xs sm:text-sm md:text-base lg:text-lg font-medium break-words leading-snug">
-                  Most embassies encourage travelers to wait for visa approval before purchasing a full-priced plane ticket
+              <div className="flex-1 flex items-start mb-6 sm:mb-8 md:mb-8">
+                <p className="text-black text-xs sm:text-sm md:text-xs lg:text-sm font-medium break-words leading-snug">
+                  Most embassies encourage travelers to wait for visa approval
+                  before purchasing a full-priced plane ticket
                 </p>
               </div>
-              <button className="absolute left-3 sm:left-4 md:left-6 bottom-3 sm:bottom-4 md:bottom-6 font-bold text-[#233789] bg-transparent border-none text-xs sm:text-sm md:text-base">Iceland Embassy</button>
+              <button className="absolute left-3 sm:left-4 md:left-4 lg:left-6 bottom-3 sm:bottom-4 md:bottom-4 lg:bottom-6 font-bold text-[#233789] bg-transparent border-none text-xs sm:text-sm md:text-xs">
+                Iceland Embassy
+              </button>
             </div>
           </div>
         </div>
@@ -640,40 +831,83 @@ const Index = () => {
             More reasons you'll love travelling with Us
           </h2>
           <p className="text-left text-lg md:text-2xl text-[#3839C9] mb-8 font-medium">
-            Discover the added benefits that make every journey smoother, safer, and more convenient.
+            Discover the added benefits that make every journey smoother, safer,
+            and more convenient.
           </p>
           <div className="space-y-8">
             {/* Card 1 */}
-            <div className="w-full flex flex-col sm:flex-row items-start sm:items-center rounded-2xl p-6 md:p-8 shadow-md gap-4 sm:gap-0" style={{ background: 'linear-gradient(90deg, rgb(197,230,222) 0%, rgb(205,206,242) 100%)' }}>
-              <img src="/onboard/cheap.png" alt="Cheaper" className="w-28 h-28 md:w-32 md:h-32 object-contain mb-2 sm:mb-0 sm:mr-6 bg-transparent" />
-              <h3 className="text-lg md:text-2xl font-extrabold text-[#191A78] min-w-[140px] md:min-w-[180px] mr-0 sm:mr-6 mb-2 sm:mb-0 text-left">
-                Cheaper than a full <br className="hidden sm:block"/> priced ticket
-              </h3>
-              <div className="hidden sm:block border-l-4 border-black h-14 md:h-16 mx-0 sm:mx-4"></div>
-              <p className="text-black font-medium flex-1 text-left text-sm md:text-base">
-                Instead of wasting hundreds on throwaway or temporary flight tickets, you can meet your travel requirements starting at just $15.
+            <div
+              className="w-full flex flex-col sm:flex-row items-center sm:items-stretch rounded-2xl p-6 md:p-8 shadow-md gap-4 sm:gap-6 min-h-[120px]"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgb(197,230,222) 0%, rgb(205,206,242) 100%)",
+              }}
+            >
+              <img
+                src="/onboard/cheap.png"
+                alt="Cheaper"
+                className="w-20 h-20 md:w-24 md:h-24 object-contain bg-transparent flex-shrink-0 sm:self-center"
+              />
+              <div className="text-lg md:text-xl font-extrabold text-[#191A78] min-w-[140px] md:min-w-[160px] text-center sm:text-left flex-shrink-0 flex items-center justify-center sm:justify-start h-16">
+                <h3>
+                  Cheaper than a full <br className="hidden sm:block" /> priced
+                  ticket
+                </h3>
+              </div>
+              <div className="hidden sm:flex border-l-4 border-black mx-4 flex-shrink-0 self-stretch"></div>
+              <p className="text-black font-medium flex-1 text-center sm:text-left text-sm md:text-base flex items-center">
+                Instead of wasting hundreds on throwaway or temporary flight
+                tickets, you can meet your travel requirements starting at just
+                $15.
               </p>
             </div>
             {/* Card 2 */}
-            <div className="w-full flex flex-col sm:flex-row items-start sm:items-center rounded-2xl p-6 md:p-8 shadow-md gap-4 sm:gap-0" style={{ background: 'linear-gradient(90deg, rgb(227,223,214) 0%, rgb(205,206,242) 100%)' }}>
-              <img src="/onboard/real.png" alt="Real Reservations" className="w-28 h-28 md:w-32 md:h-32 object-contain mb-2 sm:mb-0 sm:mr-6 bg-transparent" />
-              <h3 className="text-lg md:text-2xl font-extrabold text-[#191A78] min-w-[140px] md:min-w-[180px] mr-0 sm:mr-6 mb-2 sm:mb-0 text-left">
-                Real <br className="hidden sm:block"/> Reservations
-              </h3>
-              <div className="hidden sm:block border-l-4 border-black h-14 md:h-16 mx-0 sm:mx-4"></div>
-              <p className="text-black font-medium flex-1 text-left text-sm md:text-base">
-                A real reservation with PNR code is made by a registered travel agency. Pay via major credit cards or Paypal.
+            <div
+              className="w-full flex flex-col sm:flex-row items-center sm:items-stretch rounded-2xl p-6 md:p-8 shadow-md gap-4 sm:gap-6 min-h-[120px]"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgb(227,223,214) 0%, rgb(205,206,242) 100%)",
+              }}
+            >
+              <img
+                src="/onboard/real.png"
+                alt="Real Reservations"
+                className="w-20 h-20 md:w-24 md:h-24 object-contain bg-transparent flex-shrink-0 sm:self-center"
+              />
+              <div className="text-lg md:text-xl font-extrabold text-[#191A78] min-w-[140px] md:min-w-[160px] text-center sm:text-left flex-shrink-0 flex items-center justify-center sm:justify-start h-16">
+                <h3>
+                  Real <br className="hidden sm:block" /> Reservations
+                </h3>
+              </div>
+              <div className="hidden sm:flex border-l-4 border-black mx-4 flex-shrink-0 self-stretch"></div>
+              <p className="text-black font-medium flex-1 text-center sm:text-left text-sm md:text-base flex items-center">
+                A real reservation with PNR code is made by a registered travel
+                agency. Pay via major credit cards or Paypal.
               </p>
             </div>
             {/* Card 3 */}
-            <div className="w-full flex flex-col sm:flex-row items-start sm:items-center rounded-2xl p-6 md:p-8 shadow-md gap-4 sm:gap-0" style={{ background: 'linear-gradient(90deg, rgb(223,227,211) 0%, rgb(205,206,242) 100%)' }}>
-              <img src="/onboard/get.png" alt="Get your reservation within 60 seconds" className="w-28 h-28 md:w-32 md:h-32 object-contain mb-2 sm:mb-0 sm:mr-6 bg-transparent" />
-              <h3 className="text-lg md:text-2xl font-extrabold text-[#191A78] min-w-[140px] md:min-w-[180px] mr-0 sm:mr-6 mb-2 sm:mb-0 text-left">
-                Get your reservation <br className="hidden sm:block"/> within 60 seconds
-              </h3>
-              <div className="hidden sm:block border-l-4 border-black h-14 md:h-16 mx-0 sm:mx-4"></div>
-              <p className="text-black font-medium flex-1 text-left text-sm md:text-base">
-                We deliver your ticket  within minutes. We are the best Onboard tickets. Flexible, fast, and stress-free.
+            <div
+              className="w-full flex flex-col sm:flex-row items-center sm:items-stretch rounded-2xl p-6 md:p-8 shadow-md gap-4 sm:gap-6 min-h-[120px]"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgb(223,227,211) 0%, rgb(205,206,242) 100%)",
+              }}
+            >
+              <img
+                src="/onboard/get.png"
+                alt="Get your reservation within 60 seconds"
+                className="w-20 h-20 md:w-24 md:h-24 object-contain bg-transparent flex-shrink-0 sm:self-center"
+              />
+              <div className="text-lg md:text-xl font-extrabold text-[#191A78] min-w-[140px] md:min-w-[160px] text-center sm:text-left flex-shrink-0 flex items-center justify-center sm:justify-start h-16">
+                <h3>
+                  Get your reservation <br className="hidden sm:block" /> within
+                  60 seconds
+                </h3>
+              </div>
+              <div className="hidden sm:flex border-l-4 border-black mx-4 flex-shrink-0 self-stretch"></div>
+              <p className="text-black font-medium flex-1 text-center sm:text-left text-sm md:text-base flex items-center">
+                We deliver your ticket within minutes. We are the best Onboard
+                tickets. Flexible, fast, and stress-free.
               </p>
             </div>
           </div>
@@ -686,14 +920,25 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Left: Heading and Description */}
             <div className="flex flex-col justify-between h-full">
-              <h2 className="text-3xl text-left text-[#191A78] md:text-5xl font-extrabold font-jakarta mb-4 md:mb-8 leading-tight tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: 800 }}>
-                OnboardTicket<br />works with 100+ airlines
+              <h2
+                className="text-3xl text-left text-[#191A78] md:text-5xl font-extrabold font-jakarta mb-4 md:mb-8 leading-tight tracking-tight"
+                style={{
+                  fontFamily: "Plus Jakarta Sans, sans-serif",
+                  fontWeight: 800,
+                }}
+              >
+                OnboardTicket
+                <br />
+                works with 100+ airlines
               </h2>
-              <p className="text-[#3839C9] text-lg md:text-2xl font-medium mb-6 md:mb-10">Book with confidence. We partner with major airlines to provide authentic, verifiable reservations for your travel needs.</p>
+              <p className="text-[#3839C9] text-lg md:text-2xl font-medium mb-6 md:mb-10">
+                Book with confidence. We partner with major airlines to provide
+                authentic, verifiable reservations for your travel needs.
+              </p>
               <div className="flex gap-2 md:gap-4 mt-auto">
-                <button 
-                className="border-2 border-[#5225B8] bg-transparent text-[#233789] px-6 md:px-8 py-2 md:py-3 rounded-xl font-bold text-base md:text-lg hover:bg-purple-50 transition-colors shadow-none"
-                onClick={() => navigate("/userform")}
+                <button
+                  className="border-2 border-[#5225B8] bg-transparent text-[#233789] px-6 md:px-8 py-2 md:py-3 rounded-xl font-bold text-base md:text-lg hover:bg-purple-50 transition-colors shadow-none"
+                  onClick={() => navigate("/userform")}
                 >
                   See sample ticket
                 </button>
@@ -707,16 +952,47 @@ const Index = () => {
               </div>
             </div>
             {/* Right: 2x2 grid of airline images */}
-            <div className="grid grid-cols-2 grid-rows-2 gap-4 md:gap-8">
-              <img src="/onboard/Lufthansa.png" alt="Lufthansa" className="w-full h-auto max-w-[180px] md:max-w-[220px] mx-auto object-contain" loading="lazy" />
-              <img src="/onboard/alaska.png" alt="Alaska" className="w-full h-auto max-w-[180px] md:max-w-[220px] mx-auto object-contain" loading="lazy" />
-              <img src="/onboard/klm.png" alt="KLM" className="w-full h-auto max-w-[180px] md:max-w-[220px] mx-auto object-contain" loading="lazy" />
-              <img src="/onboard/emirate.png" alt="Emirates" className="w-full h-auto max-w-[180px] md:max-w-[220px] mx-auto object-contain" loading="lazy" />
+            <div className="grid grid-cols-2 grid-rows-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+              <img
+                src="/onboard/Lufthansa.png"
+                alt="Lufthansa"
+                className="w-full h-auto max-w-[120px] sm:max-w-[140px] md:max-w-[160px] lg:max-w-[180px] mx-auto object-contain"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+              <img
+                src="/onboard/alaska.png"
+                alt="Alaska"
+                className="w-full h-auto max-w-[120px] sm:max-w-[140px] md:max-w-[160px] lg:max-w-[180px] mx-auto object-contain"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+              <img
+                src="/onboard/klm.png"
+                alt="KLM"
+                className="w-full h-auto max-w-[120px] sm:max-w-[140px] md:max-w-[160px] lg:max-w-[180px] mx-auto object-contain"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+              <img
+                src="/onboard/emirate.png"
+                alt="Emirates"
+                className="w-full h-auto max-w-[120px] sm:max-w-[140px] md:max-w-[160px] lg:max-w-[180px] mx-auto object-contain"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
             </div>
           </div>
         </div>
       </section>
-
 
       {/* FAQ Section */}
       <section className="py-16 md:py-20">
@@ -728,7 +1004,8 @@ const Index = () => {
             Get support within 30 min, on average
           </p>
           <p className="text-lg text-left md:text-2xl text-[#8A8A8F] mb-8 md:mb-12 font-light font-jakarta">
-            Check out our frequently asked questions below or reach out to our team for fast, friendly support
+            Check out our frequently asked questions below or reach out to our
+            team for fast, friendly support
           </p>
 
           <div className="w-full text-left">
@@ -759,7 +1036,7 @@ const Index = () => {
           </div>
 
           <div className="flex gap-2 md:gap-4 mt-8 justify-start">
-            <button 
+            <button
               className="bg-[#3839C9] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold text-base md:text-lg hover:bg-blue-700 transition-colors shadow-md"
               onClick={() => navigate("/faq")}
             >
@@ -768,8 +1045,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-
 
       {/* Footer */}
       <footer className="mt-24 px-4 sm:px-8 lg:px-36">
@@ -808,9 +1083,24 @@ const Index = () => {
                 About
               </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-[#A2A2A2]">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/about")}>Who We are ?</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/privacy-policy")}>Privacy Policy</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/terms-conditions")}>Terms & Conditions</li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/about")}
+                >
+                  Who We are ?
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/privacy-policy")}
+                >
+                  Privacy Policy
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/terms-conditions")}
+                >
+                  Terms & Conditions
+                </li>
               </ul>
             </div>
             {/* Get Help */}
@@ -818,11 +1108,26 @@ const Index = () => {
               <h4 className="text-base md:text-lg font-bold text-[#0D69F2]">
                 Get Help
               </h4>
-              
+
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-[#A2A2A2]">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/faq")}>FAQs</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/payment")}>Payment</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/contact")}>Contact Support 24/7</li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/faq")}
+                >
+                  FAQs
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/payment")}
+                >
+                  Payment
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/contact")}
+                >
+                  Contact Support 24/7
+                </li>
               </ul>
             </div>
             {/* Follow Us */}
