@@ -135,33 +135,36 @@ export class ServiceStatusChecker {
 
   public static async checkAllServices(): Promise<ServiceCheckResult> {
     console.log('🔍 Checking external services status...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━');
-    
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     const services: ServiceStatus[] = [];
-    
+
     try {
       // Check internal APIs
+      console.log('📡 Checking internal APIs...');
       const internalServices = await this.checkInternalAPIs();
       services.push(...internalServices);
-      
+
       // Check Supabase
+      console.log('🔗 Checking Supabase database...');
       const supabaseStatus = await this.checkSupabaseStatus();
       services.push(supabaseStatus);
-      
+
       // Calculate summary
       const totalChecked = services.length;
       const working = services.filter(s => s.status === 'working').length;
       const failed = services.filter(s => s.status === 'error').length;
-      
+
       // Log results
+      console.log('\n📋 Service Status Results:');
       services.forEach(service => {
         const timeStr = service.responseTime ? ` (${service.responseTime}ms)` : '';
         console.log(`${service.message}${timeStr} - ${service.name}`);
       });
-      
+
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log(`📊 Services Summary: ${working}/${totalChecked} working, ${failed} failed`);
-      
+
       if (failed === 0) {
         console.log('🎉 All services are operational!');
       } else if (working > 0) {
@@ -169,14 +172,14 @@ export class ServiceStatusChecker {
       } else {
         console.log('🚨 All services are down - check network and configuration');
       }
-      
+
       return {
         services,
         totalChecked,
         working,
         failed
       };
-      
+
     } catch (error) {
       console.error('❌ Service status check failed:', error);
       return {
