@@ -14,6 +14,7 @@ import {
 import TestimonialCarousel from "../components/ui/TestimonialCarousel";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { checkServicesOnLoad } from "../lib/serviceStatusChecker";
 
 const testimonials = [
   {
