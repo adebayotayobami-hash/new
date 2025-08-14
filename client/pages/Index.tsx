@@ -100,6 +100,16 @@ const Index = () => {
     return () => clearInterval(interval);
   }, [totalTestimonials]);
 
+  // Check external services status on app load
+  useEffect(() => {
+    // Add a small delay to ensure the app is fully loaded
+    const timeoutId = setTimeout(() => {
+      checkServicesOnLoad();
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, []);
+
   // Close mobile menu when clicking outside or on navigation
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
