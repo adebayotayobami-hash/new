@@ -120,20 +120,20 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-[#E7E9FF] font-jakarta overflow-x-hidden px-4 md:px-16 py-4 md:py-16">
       {/* Header */}
-      <header className="container mx-auto px-4 md:px-12 py-2 md:py-4">
+      <header className="container mx-auto px-4 md:px-12 py-2 md:py-4 relative">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
+          <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
             <img
               src="/onboard/result.png"
               alt="OnboardTicket Logo"
-              className="h-14 md:h-24 w-auto max-w-[220px] md:max-w-[320px] object-contain cursor-pointer"
+              className="h-12 sm:h-14 md:h-24 w-auto max-w-[200px] sm:max-w-[220px] md:max-w-[320px] object-contain cursor-pointer"
               loading="eager"
               onClick={() => navigate("/")}
             />
           </div>
 
-          {/* Navigation */}
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-4 md:gap-8">
             <button
               className="px-8 py-2 text-brand-text-primary font-bold text-base md:text-lg hover:bg-gray-100 rounded-lg transition-colors shadow-none"
@@ -178,7 +178,115 @@ const Index = () => {
               </div>
             )}
           </div>
+
+          {/* Mobile Hamburger Menu Button */}
+          <button
+            className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-white shadow-md hover:bg-gray-50 transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle mobile menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6 text-brand-text-primary" />
+            ) : (
+              <Menu className="w-6 h-6 text-brand-text-primary" />
+            )}
+          </button>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+              onClick={closeMobileMenu}
+            />
+
+            {/* Mobile Menu */}
+            <div className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-b-2xl z-50 md:hidden border-t border-gray-100">
+              <div className="p-6 space-y-4">
+                {/* Get Support */}
+                <button
+                  className="w-full text-left py-3 px-4 text-brand-text-primary font-bold text-lg hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-3"
+                  onClick={() => handleMobileNavigation("/contact")}
+                >
+                  <Navigation className="w-5 h-5" />
+                  Get Support
+                </button>
+
+                {isAuthenticated ? (
+                  <>
+                    {/* Dashboard */}
+                    <button
+                      className="w-full text-left py-3 px-4 bg-[#3839C9] text-white font-bold text-lg rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-3"
+                      onClick={() => handleMobileNavigation("/dashboard")}
+                    >
+                      <User className="w-5 h-5" />
+                      Dashboard
+                    </button>
+
+                    {/* Logout */}
+                    <button
+                      className="w-full text-left py-3 px-4 text-brand-text-primary font-bold text-lg hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-3"
+                      onClick={() => {
+                        logout();
+                        handleMobileNavigation("/");
+                      }}
+                    >
+                      <LogOut className="w-5 h-5" />
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Sign In */}
+                    <button
+                      className="w-full text-left py-3 px-4 text-brand-text-primary font-bold text-lg hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-3"
+                      onClick={() => handleMobileNavigation("/login")}
+                    >
+                      <User className="w-5 h-5" />
+                      Sign In
+                    </button>
+
+                    {/* Book Now */}
+                    <button
+                      className="w-full text-left py-3 px-4 bg-[#3839C9] text-white font-bold text-lg rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-3"
+                      onClick={() => {
+                        handleBookNow();
+                        closeMobileMenu();
+                      }}
+                    >
+                      <Navigation className="w-5 h-5" />
+                      Book Now
+                    </button>
+                  </>
+                )}
+
+                {/* Additional Mobile Menu Items */}
+                <div className="border-t border-gray-200 pt-4 mt-4">
+                  <button
+                    className="w-full text-left py-3 px-4 text-brand-text-primary font-semibold text-base hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => handleMobileNavigation("/about")}
+                  >
+                    About Us
+                  </button>
+                  <button
+                    className="w-full text-left py-3 px-4 text-brand-text-primary font-semibold text-base hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => handleMobileNavigation("/faq")}
+                  >
+                    FAQ
+                  </button>
+                  <button
+                    className="w-full text-left py-3 px-4 text-brand-text-primary font-semibold text-base hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => handleMobileNavigation("/contact")}
+                  >
+                    Contact
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </header>
 
       {/* Hero Section */}
