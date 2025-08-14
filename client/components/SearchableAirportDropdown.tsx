@@ -19,7 +19,7 @@ export default function SearchableAirportDropdown({
   placeholder,
   excludeCode,
   className = "",
-  error = false
+  error = false,
 }: SearchableAirportDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,12 +29,13 @@ export default function SearchableAirportDropdown({
 
   // Filter airports based on search term and excluded airport
   useEffect(() => {
-    let filtered = airports.filter(airport => 
-      airport.code !== excludeCode &&
-      (airport.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       airport.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       airport.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       airport.country.toLowerCase().includes(searchTerm.toLowerCase()))
+    let filtered = airports.filter(
+      (airport) =>
+        airport.code !== excludeCode &&
+        (airport.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          airport.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          airport.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          airport.country.toLowerCase().includes(searchTerm.toLowerCase())),
     );
     setFilteredAirports(filtered);
   }, [searchTerm, airports, excludeCode]);
@@ -42,19 +43,22 @@ export default function SearchableAirportDropdown({
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
         setSearchTerm("");
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
-  const selectedAirport = airports.find(airport => airport.code === value);
+  const selectedAirport = airports.find((airport) => airport.code === value);
 
   const handleSelect = (airport: Airport) => {
     onChange(airport.code);
@@ -81,14 +85,13 @@ export default function SearchableAirportDropdown({
       <div
         onClick={handleOpen}
         className={`w-full bg-white border rounded p-4 text-gray-600 cursor-pointer flex items-center justify-between ${
-          error ? 'border-red-500' : 'border-gray-300'
-        } ${isOpen ? 'ring-2 ring-blue-500 border-blue-500' : ''}`}
+          error ? "border-red-500" : "border-gray-300"
+        } ${isOpen ? "ring-2 ring-blue-500 border-blue-500" : ""}`}
       >
-        <span className={selectedAirport ? 'text-gray-900' : 'text-gray-500'}>
-          {selectedAirport 
+        <span className={selectedAirport ? "text-gray-900" : "text-gray-500"}>
+          {selectedAirport
             ? `${selectedAirport.city} (${selectedAirport.code}) - ${selectedAirport.name}`
-            : placeholder
-          }
+            : placeholder}
         </span>
         <div className="flex items-center gap-2">
           {selectedAirport && (
@@ -99,7 +102,9 @@ export default function SearchableAirportDropdown({
               <X className="w-4 h-4 text-gray-400" />
             </button>
           )}
-          <ChevronDown className={`w-5 h-5 text-gray-600 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            className={`w-5 h-5 text-gray-600 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          />
         </div>
       </div>
 

@@ -19,7 +19,7 @@ The system automatically checks:
 ✅ **API Server** - Main application backend  
 ✅ **Amadeus Flight API** - Flight search and booking service  
 ✅ **Stripe Payment API** - Payment processing service  
-✅ **Supabase Database** - User data and authentication  
+✅ **Supabase Database** - User data and authentication
 
 ## Console Output Example
 
@@ -38,7 +38,7 @@ The system automatically checks:
 ## Status Indicators
 
 - ✅ **Working**: Service is operational
-- ❌ **Error**: Service has issues or is down  
+- ❌ **Error**: Service has issues or is down
 - ⏱️ **Timeout**: Service took too long to respond
 - 🌐 **Network Error**: Connection or CORS issues
 
@@ -49,6 +49,7 @@ Each service check includes response time in milliseconds to help identify perfo
 ## Troubleshooting
 
 If you see errors:
+
 1. Check your internet connection
 2. Verify API keys are configured correctly
 3. Check if external services are experiencing downtime

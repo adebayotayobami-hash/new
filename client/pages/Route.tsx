@@ -4,7 +4,10 @@ import { useNavigate } from "react-router-dom";
 import DatePicker from "../components/DatePicker";
 import SearchableAirportDropdown from "../components/SearchableAirportDropdown";
 import BookingSidebar from "../components/BookingSidebar";
-import { useFormValidation, CommonValidationRules } from "../hooks/useFormValidation";
+import {
+  useFormValidation,
+  CommonValidationRules,
+} from "../hooks/useFormValidation";
 import { Airport, FlightRoute } from "@shared/api";
 import { supabaseHelpers } from "../lib/supabaseClient";
 
@@ -16,27 +19,127 @@ interface RouteProps {
 
 // Default airports (fallback if API fails)
 const defaultAirports: Airport[] = [
-  { code: "RFD", name: "Chicago Rockford International Airport", city: "Chicago", country: "USA" },
+  {
+    code: "RFD",
+    name: "Chicago Rockford International Airport",
+    city: "Chicago",
+    country: "USA",
+  },
   { code: "ORY", name: "Paris Orly Airport", city: "Paris", country: "France" },
-  { code: "LHR", name: "London Heathrow Airport", city: "London", country: "UK" },
-  { code: "JFK", name: "John F. Kennedy International Airport", city: "New York", country: "USA" },
-  { code: "LAX", name: "Los Angeles International Airport", city: "Los Angeles", country: "USA" },
-  { code: "DXB", name: "Dubai International Airport", city: "Dubai", country: "UAE" },
-  { code: "SIN", name: "Singapore Changi Airport", city: "Singapore", country: "Singapore" },
-  { code: "NRT", name: "Narita International Airport", city: "Tokyo", country: "Japan" },
-  { code: "FRA", name: "Frankfurt Airport", city: "Frankfurt", country: "Germany" },
-  { code: "AMS", name: "Amsterdam Airport Schiphol", city: "Amsterdam", country: "Netherlands" },
-  { code: "CDG", name: "Charles de Gaulle Airport", city: "Paris", country: "France" },
-  { code: "MIA", name: "Miami International Airport", city: "Miami", country: "USA" },
-  { code: "BOS", name: "Logan International Airport", city: "Boston", country: "USA" },
-  { code: "ATL", name: "Hartsfield-Jackson Atlanta International Airport", city: "Atlanta", country: "USA" },
-  { code: "ORD", name: "Chicago O'Hare International Airport", city: "Chicago", country: "USA" },
-  { code: "DEN", name: "Denver International Airport", city: "Denver", country: "USA" },
-  { code: "SEA", name: "Seattle-Tacoma International Airport", city: "Seattle", country: "USA" },
-  { code: "SFO", name: "San Francisco International Airport", city: "San Francisco", country: "USA" },
-  { code: "LAS", name: "Harry Reid International Airport", city: "Las Vegas", country: "USA" },
-  { code: "YYZ", name: "Toronto Pearson International Airport", city: "Toronto", country: "Canada" },
-  { code: "SYD", name: "Sydney Kingsford Smith Airport", city: "Sydney", country: "Australia" }
+  {
+    code: "LHR",
+    name: "London Heathrow Airport",
+    city: "London",
+    country: "UK",
+  },
+  {
+    code: "JFK",
+    name: "John F. Kennedy International Airport",
+    city: "New York",
+    country: "USA",
+  },
+  {
+    code: "LAX",
+    name: "Los Angeles International Airport",
+    city: "Los Angeles",
+    country: "USA",
+  },
+  {
+    code: "DXB",
+    name: "Dubai International Airport",
+    city: "Dubai",
+    country: "UAE",
+  },
+  {
+    code: "SIN",
+    name: "Singapore Changi Airport",
+    city: "Singapore",
+    country: "Singapore",
+  },
+  {
+    code: "NRT",
+    name: "Narita International Airport",
+    city: "Tokyo",
+    country: "Japan",
+  },
+  {
+    code: "FRA",
+    name: "Frankfurt Airport",
+    city: "Frankfurt",
+    country: "Germany",
+  },
+  {
+    code: "AMS",
+    name: "Amsterdam Airport Schiphol",
+    city: "Amsterdam",
+    country: "Netherlands",
+  },
+  {
+    code: "CDG",
+    name: "Charles de Gaulle Airport",
+    city: "Paris",
+    country: "France",
+  },
+  {
+    code: "MIA",
+    name: "Miami International Airport",
+    city: "Miami",
+    country: "USA",
+  },
+  {
+    code: "BOS",
+    name: "Logan International Airport",
+    city: "Boston",
+    country: "USA",
+  },
+  {
+    code: "ATL",
+    name: "Hartsfield-Jackson Atlanta International Airport",
+    city: "Atlanta",
+    country: "USA",
+  },
+  {
+    code: "ORD",
+    name: "Chicago O'Hare International Airport",
+    city: "Chicago",
+    country: "USA",
+  },
+  {
+    code: "DEN",
+    name: "Denver International Airport",
+    city: "Denver",
+    country: "USA",
+  },
+  {
+    code: "SEA",
+    name: "Seattle-Tacoma International Airport",
+    city: "Seattle",
+    country: "USA",
+  },
+  {
+    code: "SFO",
+    name: "San Francisco International Airport",
+    city: "San Francisco",
+    country: "USA",
+  },
+  {
+    code: "LAS",
+    name: "Harry Reid International Airport",
+    city: "Las Vegas",
+    country: "USA",
+  },
+  {
+    code: "YYZ",
+    name: "Toronto Pearson International Airport",
+    city: "Toronto",
+    country: "Canada",
+  },
+  {
+    code: "SYD",
+    name: "Sydney Kingsford Smith Airport",
+    city: "Sydney",
+    country: "Australia",
+  },
 ];
 
 export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
@@ -54,14 +157,14 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
   // Form validation
   const validationRules = {
     fromLocation: [
-      { required: true, message: 'Please select a departure airport' }
+      { required: true, message: "Please select a departure airport" },
     ],
     toLocation: [
-      { required: true, message: 'Please select a destination airport' },
+      { required: true, message: "Please select a destination airport" },
       {
         custom: (value: string) => value !== fromLocation,
-        message: 'Destination must be different from departure'
-      }
+        message: "Destination must be different from departure",
+      },
     ],
     departureDate: CommonValidationRules.date,
     ...(tripType === "roundtrip" && {
@@ -72,10 +175,10 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
             if (!value || !departureDate) return true;
             return new Date(value) > new Date(departureDate);
           },
-          message: 'Return date must be after departure date'
-        }
-      ]
-    })
+          message: "Return date must be after departure date",
+        },
+      ],
+    }),
   };
 
   const {
@@ -97,7 +200,7 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
           setAirports(data);
         }
       } catch (error) {
-        console.log('Using default airports due to API error:', error);
+        console.log("Using default airports due to API error:", error);
         // Keep default airports
       } finally {
         setLoadingAirports(false);
@@ -106,33 +209,33 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
 
     const restoreFormData = () => {
       try {
-        const savedRoute = localStorage.getItem('bookingRoute');
+        const savedRoute = localStorage.getItem("bookingRoute");
         if (savedRoute) {
           const routeData = JSON.parse(savedRoute);
-          setTripType(routeData.tripType || 'oneway');
-          setFromLocation(routeData.from?.code || '');
-          setToLocation(routeData.to?.code || '');
-          setDepartureDate(routeData.departureDate || '');
-          setReturnDate(routeData.returnDate || '');
+          setTripType(routeData.tripType || "oneway");
+          setFromLocation(routeData.from?.code || "");
+          setToLocation(routeData.to?.code || "");
+          setDepartureDate(routeData.departureDate || "");
+          setReturnDate(routeData.returnDate || "");
         }
       } catch (error) {
-        console.log('Error restoring form data:', error);
+        console.log("Error restoring form data:", error);
       }
     };
 
     const setDefaultDates = () => {
       // Only set default dates if no saved data
-      const savedRoute = localStorage.getItem('bookingRoute');
+      const savedRoute = localStorage.getItem("bookingRoute");
       if (!savedRoute) {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        const defaultDate = tomorrow.toISOString().split('T')[0];
+        const defaultDate = tomorrow.toISOString().split("T")[0];
         setDepartureDate(defaultDate);
 
         if (tripType === "roundtrip") {
           const weekLater = new Date();
           weekLater.setDate(weekLater.getDate() + 8);
-          setReturnDate(weekLater.toISOString().split('T')[0]);
+          setReturnDate(weekLater.toISOString().split("T")[0]);
         }
       }
     };
@@ -147,30 +250,38 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
     if (tripType === "roundtrip" && !returnDate && departureDate) {
       const depDate = new Date(departureDate);
       depDate.setDate(depDate.getDate() + 7);
-      setReturnDate(depDate.toISOString().split('T')[0]);
+      setReturnDate(depDate.toISOString().split("T")[0]);
     }
   }, [tripType, departureDate]);
 
   // Save form data to localStorage whenever it changes
   useEffect(() => {
     if (fromLocation || toLocation || departureDate || returnDate) {
-      const fromAirport = airports.find(a => a.code === fromLocation);
-      const toAirport = airports.find(a => a.code === toLocation);
+      const fromAirport = airports.find((a) => a.code === fromLocation);
+      const toAirport = airports.find((a) => a.code === toLocation);
 
       const routeData: FlightRoute = {
-        from: fromAirport || { code: fromLocation, name: '', city: '', country: '' },
-        to: toAirport || { code: toLocation, name: '', city: '', country: '' },
+        from: fromAirport || {
+          code: fromLocation,
+          name: "",
+          city: "",
+          country: "",
+        },
+        to: toAirport || { code: toLocation, name: "", city: "", country: "" },
         departureDate,
-        returnDate: tripType === 'roundtrip' ? returnDate : undefined,
-        tripType
+        returnDate: tripType === "roundtrip" ? returnDate : undefined,
+        tripType,
       };
 
-      localStorage.setItem('bookingRoute', JSON.stringify(routeData));
+      localStorage.setItem("bookingRoute", JSON.stringify(routeData));
     }
   }, [fromLocation, toLocation, departureDate, returnDate, tripType, airports]);
 
-  const handleLocationChange = (field: 'fromLocation' | 'toLocation', value: string) => {
-    if (field === 'fromLocation') {
+  const handleLocationChange = (
+    field: "fromLocation" | "toLocation",
+    value: string,
+  ) => {
+    if (field === "fromLocation") {
       setFromLocation(value);
       // If destination is same as new departure, clear it
       if (toLocation === value) {
@@ -189,14 +300,21 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
     }, 100);
   };
 
-  const handleDateChange = (field: 'departureDate' | 'returnDate', value: string) => {
-    if (field === 'departureDate') {
+  const handleDateChange = (
+    field: "departureDate" | "returnDate",
+    value: string,
+  ) => {
+    if (field === "departureDate") {
       setDepartureDate(value);
       // If return date is before new departure date, adjust it
-      if (tripType === "roundtrip" && returnDate && new Date(value) >= new Date(returnDate)) {
+      if (
+        tripType === "roundtrip" &&
+        returnDate &&
+        new Date(value) >= new Date(returnDate)
+      ) {
         const newReturnDate = new Date(value);
         newReturnDate.setDate(newReturnDate.getDate() + 1);
-        setReturnDate(newReturnDate.toISOString().split('T')[0]);
+        setReturnDate(newReturnDate.toISOString().split("T")[0]);
       }
     } else {
       setReturnDate(value);
@@ -216,11 +334,11 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
       fromLocation,
       toLocation,
       departureDate,
-      ...(tripType === "roundtrip" && { returnDate })
+      ...(tripType === "roundtrip" && { returnDate }),
     };
 
     // Set all fields as touched for validation display
-    Object.keys(formData).forEach(field => {
+    Object.keys(formData).forEach((field) => {
       setFieldTouched(field, true);
     });
 
@@ -231,11 +349,11 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
     }
 
     // Check that we have valid airports
-    const fromAirport = airports.find(a => a.code === fromLocation);
-    const toAirport = airports.find(a => a.code === toLocation);
+    const fromAirport = airports.find((a) => a.code === fromLocation);
+    const toAirport = airports.find((a) => a.code === toLocation);
 
     if (!fromAirport || !toAirport) {
-      console.error('Invalid airport selection');
+      console.error("Invalid airport selection");
       return;
     }
 
@@ -244,7 +362,7 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
 
     try {
       // Simulate API call to search for flights
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Store complete route data in localStorage for persistence across steps
       const routeData: FlightRoute = {
@@ -256,13 +374,13 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
       };
 
       // Save to both keys for compatibility
-      localStorage.setItem('selectedRoute', JSON.stringify(routeData));
-      localStorage.setItem('bookingRoute', JSON.stringify(routeData));
+      localStorage.setItem("selectedRoute", JSON.stringify(routeData));
+      localStorage.setItem("bookingRoute", JSON.stringify(routeData));
 
-      console.log('Route data saved:', routeData);
+      console.log("Route data saved:", routeData);
       onNext();
     } catch (error) {
-      console.error('Error processing route:', error);
+      console.error("Error processing route:", error);
       // Still allow progression for demo purposes
       onNext();
     } finally {
@@ -272,17 +390,20 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
   };
 
   const getSelectedAirport = (code: string): Airport | undefined => {
-    return airports.find(airport => airport.code === code);
+    return airports.find((airport) => airport.code === code);
   };
 
   return (
     <div className="min-h-screen bg-ticket-primary text-white">
       {/* Header */}
       <header className="container mx-auto px-4 lg:px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}> 
-          <img 
-            src="/onboard/result.png" 
-            alt="OnboardTicket Logo" 
+        <div
+          className="flex items-center cursor-pointer"
+          onClick={() => navigate("/")}
+        >
+          <img
+            src="/onboard/result.png"
+            alt="OnboardTicket Logo"
             className="h-[40px] sm:h-[59px] w-auto max-w-[200px] sm:max-w-[294px] cursor-pointer"
             loading="eager"
             onClick={() => navigate("/")}
@@ -366,16 +487,18 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
                   <SearchableAirportDropdown
                     airports={airports}
                     value={fromLocation}
-                    onChange={(code) => handleLocationChange('fromLocation', code)}
+                    onChange={(code) =>
+                      handleLocationChange("fromLocation", code)
+                    }
                     placeholder="Search departure airport..."
                     excludeCode={toLocation}
-                    error={hasFieldError('fromLocation')}
+                    error={hasFieldError("fromLocation")}
                     className="w-full"
                   />
-                  {hasFieldError('fromLocation') && (
+                  {hasFieldError("fromLocation") && (
                     <div className="flex items-center gap-1 mt-2 text-red-400 text-sm">
                       <AlertCircle className="w-4 h-4" />
-                      <span>{getFieldError('fromLocation')}</span>
+                      <span>{getFieldError("fromLocation")}</span>
                     </div>
                   )}
                 </div>
@@ -395,16 +518,18 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
                   <SearchableAirportDropdown
                     airports={airports}
                     value={toLocation}
-                    onChange={(code) => handleLocationChange('toLocation', code)}
+                    onChange={(code) =>
+                      handleLocationChange("toLocation", code)
+                    }
                     placeholder="Search destination airport..."
                     excludeCode={fromLocation}
-                    error={hasFieldError('toLocation')}
+                    error={hasFieldError("toLocation")}
                     className="w-full"
                   />
-                  {hasFieldError('toLocation') && (
+                  {hasFieldError("toLocation") && (
                     <div className="flex items-center gap-1 mt-2 text-red-400 text-sm">
                       <AlertCircle className="w-4 h-4" />
-                      <span>{getFieldError('toLocation')}</span>
+                      <span>{getFieldError("toLocation")}</span>
                     </div>
                   )}
                 </div>
@@ -413,7 +538,9 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
 
             {/* Date Selection */}
             <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-[#F6F6FF]">Travel Dates</h3>
+              <h3 className="text-2xl font-bold text-[#F6F6FF]">
+                Travel Dates
+              </h3>
 
               <div className="space-y-6">
                 {/* Departure Date */}
@@ -424,17 +551,21 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
                   <input
                     type="date"
                     value={departureDate}
-                    onChange={(e) => handleDateChange('departureDate', e.target.value)}
-                    onBlur={() => setFieldTouched('departureDate', true)}
-                    min={new Date().toISOString().split('T')[0]}
+                    onChange={(e) =>
+                      handleDateChange("departureDate", e.target.value)
+                    }
+                    onBlur={() => setFieldTouched("departureDate", true)}
+                    min={new Date().toISOString().split("T")[0]}
                     className={`w-full bg-white border rounded-lg p-4 text-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      hasFieldError('departureDate') ? 'border-red-500' : 'border-gray-300'
+                      hasFieldError("departureDate")
+                        ? "border-red-500"
+                        : "border-gray-300"
                     }`}
                   />
-                  {hasFieldError('departureDate') && (
+                  {hasFieldError("departureDate") && (
                     <div className="flex items-center gap-1 mt-2 text-red-400 text-sm">
                       <AlertCircle className="w-4 h-4" />
-                      <span>{getFieldError('departureDate')}</span>
+                      <span>{getFieldError("departureDate")}</span>
                     </div>
                   )}
                 </div>
@@ -448,17 +579,23 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
                     <input
                       type="date"
                       value={returnDate}
-                      onChange={(e) => handleDateChange('returnDate', e.target.value)}
-                      onBlur={() => setFieldTouched('returnDate', true)}
-                      min={departureDate || new Date().toISOString().split('T')[0]}
+                      onChange={(e) =>
+                        handleDateChange("returnDate", e.target.value)
+                      }
+                      onBlur={() => setFieldTouched("returnDate", true)}
+                      min={
+                        departureDate || new Date().toISOString().split("T")[0]
+                      }
                       className={`w-full bg-white border rounded-lg p-4 text-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        hasFieldError('returnDate') ? 'border-red-500' : 'border-gray-300'
+                        hasFieldError("returnDate")
+                          ? "border-red-500"
+                          : "border-gray-300"
                       }`}
                     />
-                    {hasFieldError('returnDate') && (
+                    {hasFieldError("returnDate") && (
                       <div className="flex items-center gap-1 mt-2 text-red-400 text-sm">
                         <AlertCircle className="w-4 h-4" />
-                        <span>{getFieldError('returnDate')}</span>
+                        <span>{getFieldError("returnDate")}</span>
                       </div>
                     )}
                   </div>
@@ -512,18 +649,29 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
             {/* Logo and Copyright */}
             <div className="space-y-4">
               <div>
-                <img 
-                  src="/onboard/result.png" 
-                  alt="OnboardTicket Logo" 
+                <img
+                  src="/onboard/result.png"
+                  alt="OnboardTicket Logo"
                   className="w-40 h-10 mb-4 cursor-pointer"
                   onClick={() => navigate("/")}
                 />
                 <hr className="border-white mb-4" />
-                <div className="text-base font-semibold text-white">Onboardticket.com</div>
-                <div className="text-xs opacity-80 mt-2 text-white">© 2025 — Copyright</div>
+                <div className="text-base font-semibold text-white">
+                  Onboardticket.com
+                </div>
+                <div className="text-xs opacity-80 mt-2 text-white">
+                  © 2025 — Copyright
+                </div>
               </div>
               <p className="text-xs opacity-80 leading-relaxed text-white">
-                OnboardTicket is committed to upholding the highest standards in compliance with international civil aviation regulations and ethical booking practices. This includes, but is not limited to, strict avoidance of misuse of booking classes, fraudulent activities, duplicate, speculative, or fictitious reservations. Users who engage in repeated cancellations without legitimate intent will be subject to monitoring, and may face usage restrictions or permanent bans from our platform.
+                OnboardTicket is committed to upholding the highest standards in
+                compliance with international civil aviation regulations and
+                ethical booking practices. This includes, but is not limited to,
+                strict avoidance of misuse of booking classes, fraudulent
+                activities, duplicate, speculative, or fictitious reservations.
+                Users who engage in repeated cancellations without legitimate
+                intent will be subject to monitoring, and may face usage
+                restrictions or permanent bans from our platform.
               </p>
             </div>
             {/* About */}
@@ -532,9 +680,24 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
                 About
               </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-white">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/about")}>Who We are ?</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/privacy-policy")}>Privacy Policy</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/terms-conditions")}>Terms & Conditions</li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/about")}
+                >
+                  Who We are ?
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/privacy-policy")}
+                >
+                  Privacy Policy
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/terms-conditions")}
+                >
+                  Terms & Conditions
+                </li>
               </ul>
             </div>
             {/* Get Help */}
@@ -543,9 +706,24 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
                 Get Help
               </h4>
               <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm font-semibold text-white">
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/faq")}>FAQs</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/payment")}>Payment</li>
-                <li className="cursor-pointer hover:text-[#3839C9]" onClick={() => navigate("/contact")}>Contact Support 24/7</li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/faq")}
+                >
+                  FAQs
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/payment")}
+                >
+                  Payment
+                </li>
+                <li
+                  className="cursor-pointer hover:text-[#3839C9]"
+                  onClick={() => navigate("/contact")}
+                >
+                  Contact Support 24/7
+                </li>
               </ul>
             </div>
             {/* Follow Us */}
@@ -553,7 +731,6 @@ export default function Route({ onNext, currentStep, onNavigate }: RouteProps) {
               <h4 className="text-base md:text-lg font-bold text-white">
                 Follow US
               </h4>
-              
 
               <div className="space-y-1 md:space-y-2">
                 <h5 className="text-base md:text-lg font-bold text-white">
