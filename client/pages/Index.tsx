@@ -83,6 +83,7 @@ const Index = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const [testimonialIdxLeft, setTestimonialIdxLeft] = useState(0);
   const [testimonialIdxRight, setTestimonialIdxRight] = useState(1);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const totalTestimonials = testimonials.length;
   const prevTestimonialLeft = () => setTestimonialIdxLeft((testimonialIdxLeft - 1 + totalTestimonials) % totalTestimonials);
   const nextTestimonialLeft = () => setTestimonialIdxLeft((testimonialIdxLeft + 1) % totalTestimonials);
@@ -97,6 +98,15 @@ const Index = () => {
 
     return () => clearInterval(interval);
   }, [totalTestimonials]);
+
+  // Close mobile menu when clicking outside or on navigation
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  // Handle mobile menu navigation
+  const handleMobileNavigation = (path: string) => {
+    navigate(path);
+    closeMobileMenu();
+  };
 
   // Helper function to handle Book Now navigation
   const handleBookNow = () => {
