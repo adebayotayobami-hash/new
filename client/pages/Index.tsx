@@ -254,19 +254,22 @@ const Index = () => {
           <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
             {/* Fast Reservation */}
             <div className="relative flex flex-col justify-center h-52 sm:h-52 md:h-56">
-              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg overflow-hidden">
-                <div className="bg-transparent rounded-full w-32 h-32 md:w-56 md:h-56 flex items-center justify-center mr-4 md:mr-6 shrink-0">
+              <div className="gradient-box rounded-2xl p-4 sm:p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg overflow-hidden">
+                <div className="bg-transparent rounded-full w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 flex items-center justify-center mr-3 sm:mr-4 md:mr-6 shrink-0">
                   <img
                     src="/onboard/fast.png"
                     alt="Fast Reservation Icon"
                     className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <h3 className="text-xl md:text-3xl font-extrabold text-white mb-2 font-jakarta ">
+                  <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white mb-2 font-jakarta">
                     Fast Reservation
                   </h3>
-                  <p className="text-white text-sm md:text-lg font-semibold font-jakarta break-words">
+                  <p className="text-white text-xs sm:text-sm md:text-base lg:text-lg font-semibold font-jakarta break-words">
                     Arrives instantly via email. No delay or stress (cue sigh of
                     relief!).
                   </p>
@@ -275,20 +278,22 @@ const Index = () => {
             </div>
             {/* Secure & Easy */}
             <div className="relative flex flex-col justify-center h-52 sm:h-52 md:h-56">
-              <div className="gradient-box rounded-2xl p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg overflow-hidden">
-                <div className="flex items-center justify-center mr-4 md:mr-6 shrink-0">
+              <div className="gradient-box rounded-2xl p-4 sm:p-6 md:p-8 w-full h-full flex flex-row items-center shadow-lg overflow-hidden">
+                <div className="flex items-center justify-center mr-3 sm:mr-4 md:mr-6 shrink-0">
                   <img
                     src="/onboard/secure.png"
                     alt="Secure Icon"
-                    className="w-32 h-32 md:w-56 md:h-56 object-contain"
-                    style={{ background: 'none' }}
+                    className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <h3 className="text-xl md:text-3xl font-extrabold text-white mb-2 font-jakarta ">
+                  <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white mb-2 font-jakarta">
                     Secure & Easy
                   </h3>
-                  <p className="text-white text-sm md:text-lg font-semibold font-jakarta break-words">
+                  <p className="text-white text-xs sm:text-sm md:text-base lg:text-lg font-semibold font-jakarta break-words">
                     Arrives instantly via email. No delay or stress (cue sigh of
                     relief!).
                   </p>
