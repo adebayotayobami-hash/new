@@ -8,6 +8,8 @@ import {
   Instagram,
   User,
   LogOut,
+  Menu,
+  X,
 } from "lucide-react";
 import TestimonialCarousel from "../components/ui/TestimonialCarousel";
 import { useNavigate } from "react-router-dom";
