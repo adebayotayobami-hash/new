@@ -87,6 +87,15 @@ const Index = () => {
   const prevTestimonialRight = () => setTestimonialIdxRight((testimonialIdxRight - 1 + totalTestimonials) % totalTestimonials);
   const nextTestimonialRight = () => setTestimonialIdxRight((testimonialIdxRight + 1) % totalTestimonials);
 
+  // Auto-slide testimonials every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTestimonialIdxRight((prev) => (prev + 1) % totalTestimonials);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [totalTestimonials]);
+
   // Helper function to handle Book Now navigation
   const handleBookNow = () => {
     if (isAuthenticated) {
