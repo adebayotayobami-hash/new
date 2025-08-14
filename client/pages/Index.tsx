@@ -408,22 +408,22 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Right Card - Independent Testimonial */}
+            {/* Right Card - Auto-sliding Testimonial */}
             <div className="grid grid-cols-1 gap-8 md:gap-12 items-center">
               <div className="space-y-6 md:space-y-8">
-                <div className="text-center lg:text-left bg-white/90 rounded-2xl shadow-lg p-8 md:p-12">
-                  <blockquote className="text-base md:text-xl font-semibold text-[#20242A] mb-4 md:mb-8 leading-relaxed">
+                <div className="text-center lg:text-left bg-white/90 rounded-2xl shadow-lg p-8 md:p-12 transition-all duration-500 ease-in-out">
+                  <blockquote className="text-base md:text-xl font-semibold text-[#20242A] mb-4 md:mb-8 leading-relaxed transition-opacity duration-300">
                     "{testimonials[testimonialIdxRight].text}"
                   </blockquote>
                   <div className="flex items-center gap-2 md:gap-4 justify-center lg:justify-start">
-                    <div className="w-10 h-10 md:w-16 md:h-16 bg-[#9BF1D5] rounded-full flex items-center justify-center overflow-hidden">
+                    <div className="w-10 h-10 md:w-16 md:h-16 bg-[#9BF1D5] rounded-full flex items-center justify-center overflow-hidden transition-all duration-300">
                       <img
                         src={testimonials[testimonialIdxRight].img}
                         alt="Profile"
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div>
+                    <div className="transition-all duration-300">
                       <h4 className="font-semibold text-[#20242A] text-sm md:text-base">
                         {testimonials[testimonialIdxRight].name}
                       </h4>
@@ -431,6 +431,17 @@ const Index = () => {
                         {testimonials[testimonialIdxRight].role}
                       </p>
                     </div>
+                  </div>
+                  {/* Auto-sliding indicator */}
+                  <div className="flex justify-center mt-4 gap-2">
+                    {testimonials.slice(0, 5).map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                          index === testimonialIdxRight % 5 ? 'bg-[#878EFF] w-6' : 'bg-gray-300'
+                        }`}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
