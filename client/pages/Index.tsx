@@ -192,7 +192,7 @@ const Index = () => {
 
           {/* Mobile Hamburger Menu Button */}
           <button
-            className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-white shadow-md hover:bg-gray-50 transition-colors"
+            className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-white shadow-md hover:bg-gray-50 transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle mobile menu"
           >
