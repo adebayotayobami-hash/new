@@ -730,11 +730,43 @@ const Index = () => {
               </div>
             </div>
             {/* Right: 2x2 grid of airline images */}
-            <div className="grid grid-cols-2 grid-rows-2 gap-4 md:gap-8">
-              <img src="/onboard/Lufthansa.png" alt="Lufthansa" className="w-full h-auto max-w-[180px] md:max-w-[220px] mx-auto object-contain" loading="lazy" />
-              <img src="/onboard/alaska.png" alt="Alaska" className="w-full h-auto max-w-[180px] md:max-w-[220px] mx-auto object-contain" loading="lazy" />
-              <img src="/onboard/klm.png" alt="KLM" className="w-full h-auto max-w-[180px] md:max-w-[220px] mx-auto object-contain" loading="lazy" />
-              <img src="/onboard/emirate.png" alt="Emirates" className="w-full h-auto max-w-[180px] md:max-w-[220px] mx-auto object-contain" loading="lazy" />
+            <div className="grid grid-cols-2 grid-rows-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+              <img
+                src="/onboard/Lufthansa.png"
+                alt="Lufthansa"
+                className="w-full h-auto max-w-[120px] sm:max-w-[140px] md:max-w-[160px] lg:max-w-[180px] mx-auto object-contain"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <img
+                src="/onboard/alaska.png"
+                alt="Alaska"
+                className="w-full h-auto max-w-[120px] sm:max-w-[140px] md:max-w-[160px] lg:max-w-[180px] mx-auto object-contain"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <img
+                src="/onboard/klm.png"
+                alt="KLM"
+                className="w-full h-auto max-w-[120px] sm:max-w-[140px] md:max-w-[160px] lg:max-w-[180px] mx-auto object-contain"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <img
+                src="/onboard/emirate.png"
+                alt="Emirates"
+                className="w-full h-auto max-w-[120px] sm:max-w-[140px] md:max-w-[160px] lg:max-w-[180px] mx-auto object-contain"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
             </div>
           </div>
         </div>
