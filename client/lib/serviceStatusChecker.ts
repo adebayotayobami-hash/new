@@ -197,9 +197,16 @@ export class ServiceStatusChecker {
 
   public static async logServiceStatus(): Promise<void> {
     try {
+      console.log('🚀 Starting service status check...');
       await this.checkAllServices();
+      console.log('✅ Service status check completed successfully');
     } catch (error) {
       console.error('🚨 Critical error in service status checker:', error);
+      console.error('📍 Error details:', {
+        name: error?.name,
+        message: error?.message,
+        stack: error?.stack
+      });
     }
   }
 }
