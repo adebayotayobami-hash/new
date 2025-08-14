@@ -135,7 +135,7 @@ export class ServiceStatusChecker {
 
   public static async checkAllServices(): Promise<ServiceCheckResult> {
     console.log('🔍 Checking external services status...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━━━━━━━━━━━━');
     
     const services: ServiceStatus[] = [];
     
@@ -202,4 +202,4 @@ export class ServiceStatusChecker {
 }
 
 // Export for use in components
-export const checkServicesOnLoad = ServiceStatusChecker.logServiceStatus;
+export const checkServicesOnLoad = () => ServiceStatusChecker.logServiceStatus();
