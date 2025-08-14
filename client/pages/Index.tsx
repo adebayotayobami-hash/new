@@ -209,12 +209,12 @@ const Index = () => {
           <>
             {/* Backdrop */}
             <div
-              className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+              className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
               onClick={closeMobileMenu}
             />
 
             {/* Mobile Menu */}
-            <div className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-b-2xl z-50 md:hidden border-t border-gray-100">
+            <div className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-b-2xl z-50 lg:hidden border-t border-gray-100">
               <div className="p-6 space-y-4">
                 {/* Get Support */}
                 <button
