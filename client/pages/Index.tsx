@@ -145,7 +145,7 @@ const Index = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-4 md:gap-8">
+          <div className="hidden lg:flex items-center gap-4 md:gap-8">
             <button
               className="px-8 py-2 text-brand-text-primary font-bold text-base md:text-lg hover:bg-gray-100 rounded-lg transition-colors shadow-none"
               onClick={() => navigate("/contact")}
